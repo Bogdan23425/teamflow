@@ -1,0 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: #f5f5f7;
+  --color-surface: #ffffff;
+  --color-border: #e1e1e6;
+
+  --color-text: #111827;
+  --color-text-muted: #6b7280;
+
+  /* светлая тема — можно пока оставить синим */
+  --color-primary: #2563eb;
+  --color-primary-soft: rgba(37, 99, 235, 0.08);
+
+  --color-danger: #ef4444;
+  --color-success: #16a34a;
+
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --shadow-soft: 0 18px 35px rgba(15, 23, 42, 0.12);
+
+  --font-family-sans: system-ui, -apple-system, BlinkMacSystemFont,
+    "SF Pro Text", "Segoe UI", sans-serif;
+
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 20px;
+
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+
+  --layout-max-width: 1120px;
+}
+
+/* тёмная тема без синего, нейтральный тёмный + тёплый акцент */
+:root[data-theme="dark"] {
+  --color-bg: #050608;       /* глубокий нейтральный фон, без синего оттенка */
+  --color-surface: #0c0d10;  /* чуть светлее, для карточек/панелей */
+  --color-border: #27272f;   /* нейтральная серая граница */
+
+  --color-text: #e5e7eb;
+  --color-text-muted: #9ca3af;
+
+  /* тёплый акцент вместо синего (что-то вроде modern orange) */
+  --color-primary: #f97316;
+  --color-primary-soft: rgba(249, 115, 22, 0.18);
+
+  --color-danger: #f97373;
+  --color-success: #4ade80;
+
+  --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.55);
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-family-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+.tf-container {
+  max-width: var(--layout-max-width);
+  margin: 0 auto;
+  padding-left: var(--space-lg);
+  padding-right: var(--space-lg);
+}
+
+@layer utilities {
+  .bg-bg {
+    background-color: var(--color-bg);
+  }
+
+  .bg-surface {
+    background-color: var(--color-surface);
+  }
+
+  .border-border {
+    border-color: var(--color-border);
+  }
+
+  .border-danger {
+    border-color: var(--color-danger);
+  }
+
+  .text-text {
+    color: var(--color-text);
+  }
+
+  .text-text-muted {
+    color: var(--color-text-muted);
+  }
+
+  .bg-primary {
+    background-color: var(--color-primary);
+  }
+
+  .bg-primary-soft {
+    background-color: var(--color-primary-soft);
+  }
+
+  .bg-danger {
+    background-color: var(--color-danger);
+  }
+
+  .bg-success {
+    background-color: var(--color-success);
+  }
+
+  .text-danger {
+    color: var(--color-danger);
+  }
+
+  .text-success {
+    color: var(--color-success);
+  }
+
+  .bg-surface-variant {
+    background-color: var(--color-bg);
+  }
+
+  .rounded-md-tf {
+    border-radius: var(--radius-md);
+  }
+
+  .rounded-lg-tf {
+    border-radius: var(--radius-lg);
+  }
+
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-strong {
+    box-shadow: 0 24px 55px rgba(15, 23, 42, 0.22);
+  }
+}
