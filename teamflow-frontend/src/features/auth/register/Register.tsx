@@ -1,4 +1,3 @@
-// src/features/auth/register/Register.tsx
 import React, { useMemo, useState } from "react";
 import { Button } from "@/shared/ui/Button";
 import { Input } from "@/shared/ui/Input";

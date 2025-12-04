@@ -1,4 +1,3 @@
-// src/features/team/TeamManagement.tsx
 import React from "react";
 import { motion } from "framer-motion";
 

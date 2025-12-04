@@ -1,4 +1,3 @@
-// src/shared/ui/PrivateHeader.tsx
 import React from "react";
 import { motion } from "framer-motion";
 import { FiSettings, FiUser } from "react-icons/fi";

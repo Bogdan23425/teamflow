@@ -1,4 +1,3 @@
-// src/pages/private/TeamPage.tsx
 import React from "react";
 import { PrivateBackground } from "@/shared/layout/PrivateBackground";
 import { Sidebar } from "@/shared/ui/Sidebar";

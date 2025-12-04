@@ -1,4 +1,3 @@
-// src/pages/public/LandingPage.tsx
 import React from "react";
 import { PublicHeader } from "@/shared/ui/PublicHeader";
 import { PublicBackground } from "@/shared/layout/PublicBackground";

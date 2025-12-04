@@ -1,4 +1,3 @@
-// src/shared/ui/LanguageSwitcher.tsx
 import React from "react";
 import { FiGlobe } from "react-icons/fi";
 import { useLanguage } from "@/shared/lib/i18n/LanguageProvider";

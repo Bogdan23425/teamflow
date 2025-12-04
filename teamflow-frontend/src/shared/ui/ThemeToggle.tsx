@@ -1,4 +1,3 @@
-// src/shared/ui/ThemeToggle.tsx
 import React from "react";
 import { FiMoon, FiSun } from "react-icons/fi";
 import { useTheme } from "@/shared/lib/theme/ThemeProvider";

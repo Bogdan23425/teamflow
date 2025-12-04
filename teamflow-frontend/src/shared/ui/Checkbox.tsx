@@ -1,4 +1,3 @@
-// src/shared/ui/Checkbox.tsx
 import React from "react";
 import { cn } from "@/shared/utils/cn";
 

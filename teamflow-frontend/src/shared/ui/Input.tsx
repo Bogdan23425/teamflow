@@ -1,4 +1,3 @@
-// src/shared/ui/Input.tsx
 import React, { useState } from "react";
 import { cn } from "@/shared/utils/cn";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";

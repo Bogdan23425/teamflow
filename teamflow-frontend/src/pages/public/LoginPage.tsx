@@ -1,4 +1,3 @@
-// src/pages/public/LoginPage.tsx
 import React from "react";
 import { PublicHeader } from "@/shared/ui/PublicHeader";
 import { PublicBackground } from "@/shared/layout/PublicBackground";

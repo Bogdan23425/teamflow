@@ -1,4 +1,3 @@
-// src/features/home/components/HighlightsSection.tsx
 import React from "react";
 import { motion, type Variants } from "framer-motion";
 
