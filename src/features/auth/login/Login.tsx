@@ -1,9 +1,15 @@
 import React, { useState } from "react";
 import { Button } from "@/shared/ui/Button";
 import { Input } from "@/shared/ui/Input";
-import { Checkbox } from "@/shared/ui/Checkbox";
+import { cn } from "@/shared/utils/cn";
+import {
+  EnvelopeIcon,
+  LockClosedIcon,
+  CheckIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { Toast, ToastViewport } from "@/shared/ui/Toast";
 
 interface LoginErrors {
   email?: string;
@@ -16,21 +22,17 @@ export const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<LoginErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   const validate = () => {
     const nextErrors: LoginErrors = {};
 
-    if (!email.trim()) {
-      nextErrors.email = "Введите email";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    if (!email.trim()) nextErrors.email = "Введите email";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
       nextErrors.email = "Некорректный email";
-    }
 
-    if (!password.trim()) {
-      nextErrors.password = "Введите пароль";
-    } else if (password.length < 6) {
-      nextErrors.password = "Минимум 6 символов";
-    }
+    if (!password) nextErrors.password = "Введите пароль";
 
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
@@ -40,67 +42,121 @@ export const Login: React.FC = () => {
     e.preventDefault();
     if (!validate()) return;
 
-    console.log("login", { email, password });
-    navigate("/app");
+    setIsSubmitting(true);
+
+    setTimeout(() => {
+      console.log("login", { email, password });
+
+      setShowSuccessToast(true);
+
+      setTimeout(() => {
+        navigate("/app");
+      }, 900);
+
+      setTimeout(() => {
+        setShowSuccessToast(false);
+        setIsSubmitting(false);
+      }, 2500);
+    }, 500);
+  };
+
+  const getStatusIcon = (value: string, error?: string) => {
+    const hasValue = value.trim().length > 0;
+    const hasError = !!error;
+    if (!hasValue && !hasError) return null;
+
+    return (
+      <div
+        className={cn(
+          "flex h-5 w-5 items-center justify-center rounded-full border text-[10px]",
+          hasError
+            ? "border-danger text-danger bg-danger/10"
+            : "border-success text-success bg-success/10"
+        )}
+      >
+        {hasError ? (
+          <XMarkIcon className="h-3.5 w-3.5" />
+        ) : (
+          <CheckIcon className="h-3.5 w-3.5" />
+        )}
+      </div>
+    );
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
-      className="w-full max-w-xl md:max-w-2xl rounded-2xl bg-surface border border-border/70 shadow-soft p-8 md:p-12 space-y-10"
-    >
-      <div className="space-y-2">
-        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
-          Вход в TeamFlow
-        </h1>
-        <p className="text-sm text-text-muted max-w-md">
-          Авторизуйтесь, чтобы перейти к задачам команды.
-        </p>
-      </div>
+    <>
+      <div
+        className="
+          relative
+          w-full
+          md:w-[520px]
+          lg:w-[520px]
+          rounded-2xl bg-surface 
+          border border-border/70 
+          shadow-soft 
+          p-6 md:p-10 
+          space-y-7
+        "
+      >
+        <div className="space-y-2 text-center">
+          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
+            Вход в аккаунт
+          </h1>
+        </div>
 
-      <form className="space-y-6" onSubmit={handleSubmit} noValidate>
-        <div className="space-y-4">
+        <form className="space-y-4" onSubmit={handleSubmit} noValidate>
           <Input
             type="email"
-            label="Email"
-            placeholder="you@example.com"
+            placeholder="Email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (errors.email)
+                setErrors((prev) => ({ ...prev, email: undefined }));
+            }}
             error={errors.email}
+            leftIcon={<EnvelopeIcon className="h-5 w-5 text-text-muted" />}
+            rightIcon={getStatusIcon(email, errors.email)}
           />
+
           <Input
             type="password"
-            label="Пароль"
-            placeholder="Ваш пароль"
+            placeholder="Пароль"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              if (errors.password)
+                setErrors((prev) => ({ ...prev, password: undefined }));
+            }}
             error={errors.password}
+            leftIcon={<LockClosedIcon className="h-5 w-5 text-text-muted" />}
+            rightIcon={getStatusIcon(password, errors.password)}
           />
-        </div>
 
-        <div className="flex items-center justify-between gap-4">
-          <Checkbox label="Запомнить меня" />
-          <button
-            type="button"
-            className="text-xs text-primary hover:underline transition-colors"
-          >
-            Забыли пароль?
-          </button>
-        </div>
+          <Button type="submit" fullWidth size="lg" disabled={isSubmitting}>
+            {isSubmitting ? "Входим..." : "Войти"}
+          </Button>
 
-        <Button type="submit" fullWidth size="lg">
-          Войти
-        </Button>
-      </form>
+          <div className="pt-1 text-center text-xs text-text-muted">
+            Нет аккаунта?{" "}
+            <Link
+              to="/register"
+              className="font-medium text-primary hover:text-primary/80 transition-colors"
+            >
+              Создать
+            </Link>
+          </div>
+        </form>
+      </div>
 
-      <p className="text-xs text-center text-text-muted">
-        Нет аккаунта?{" "}
-        <Link to="/register" className="text-primary hover:underline">
-          Зарегистрироваться
-        </Link>
-      </p>
-    </motion.div>
+      <ToastViewport>
+        <Toast
+          open={showSuccessToast}
+          title="Добро пожаловать в TeamFlow"
+          description="Вы успешно вошли в аккаунт. Перенаправляем в дашборд."
+          onClose={() => setShowSuccessToast(false)}
+        />
+      </ToastViewport>
+    </>
   );
 };
