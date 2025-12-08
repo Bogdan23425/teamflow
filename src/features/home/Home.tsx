@@ -6,7 +6,7 @@ import { BottomCta } from "./components/BottomCta";
 
 export const Home: React.FC = () => {
   return (
-    <main className="tf-container py-16 space-y-20">
+    <main className="relative flex flex-col gap-24 py-16 md:py-24">
       <HeroSection />
       <HighlightsSection />
       <BoardPreview />
