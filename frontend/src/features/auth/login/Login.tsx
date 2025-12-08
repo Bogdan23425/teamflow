@@ -10,6 +10,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { Link, useNavigate } from "react-router-dom";
 import { Toast, ToastViewport } from "@/shared/ui/Toast";
+import * as authApi from "@/shared/api/auth";
 
 interface LoginErrors {
   email?: string;
@@ -24,6 +25,7 @@ export const Login: React.FC = () => {
   const [errors, setErrors] = useState<LoginErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const validate = () => {
     const nextErrors: LoginErrors = {};
@@ -38,14 +40,16 @@ export const Login: React.FC = () => {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
     setIsSubmitting(true);
+    setFormError(null);
 
-    setTimeout(() => {
-      console.log("login", { email, password });
+    try {
+      const res = await authApi.login({ email: email.trim(), password });
+      localStorage.setItem("accessToken", res.accessToken);
 
       setShowSuccessToast(true);
 
@@ -57,7 +61,11 @@ export const Login: React.FC = () => {
         setShowSuccessToast(false);
         setIsSubmitting(false);
       }, 2500);
-    }, 500);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Не удалось войти";
+      setFormError(message);
+      setIsSubmitting(false);
+    }
   };
 
   const getStatusIcon = (value: string, error?: string) => {
@@ -136,6 +144,10 @@ export const Login: React.FC = () => {
           <Button type="submit" fullWidth size="lg" disabled={isSubmitting}>
             {isSubmitting ? "Входим..." : "Войти"}
           </Button>
+
+          {formError && (
+            <div className="text-center text-sm text-danger">{formError}</div>
+          )}
 
           <div className="pt-1 text-center text-xs text-text-muted">
             Нет аккаунта?{" "}

@@ -11,6 +11,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { Link, useNavigate } from "react-router-dom";
 import { Toast, ToastViewport } from "@/shared/ui/Toast";
+import * as authApi from "@/shared/api/auth";
 
 interface RegisterErrors {
   email?: string;
@@ -66,6 +67,7 @@ export const Register: React.FC = () => {
   const [errors, setErrors] = useState<RegisterErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const rawScore = useMemo(() => getPasswordScore(password), [password]);
   const hasPassword = password.length > 0;
@@ -89,14 +91,16 @@ export const Register: React.FC = () => {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
     setIsSubmitting(true);
+    setFormError(null);
 
-    setTimeout(() => {
-      console.log("register", { email, password });
+    try {
+      const nameFromEmail = email.includes("@") ? email.split("@")[0] : undefined;
+      await authApi.register({ email: email.trim(), password, name: nameFromEmail });
 
       setShowSuccessToast(true);
 
@@ -108,7 +112,11 @@ export const Register: React.FC = () => {
         setShowSuccessToast(false);
         setIsSubmitting(false);
       }, 2500);
-    }, 500);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Не удалось создать аккаунт";
+      setFormError(message);
+      setIsSubmitting(false);
+    }
   };
 
   const getStatusIcon = (value: string, error?: string) => {
@@ -233,6 +241,10 @@ export const Register: React.FC = () => {
           <Button type="submit" fullWidth size="lg" disabled={isSubmitting}>
             {isSubmitting ? "Создаём..." : "Создать аккаунт"}
           </Button>
+
+          {formError && (
+            <div className="text-center text-sm text-danger">{formError}</div>
+          )}
 
           <div className="pt-1 text-center text-xs text-text-muted">
             Уже есть аккаунт?{" "}

@@ -3,6 +3,7 @@ import { PublicHeader } from "@/shared/ui/PublicHeader";
 import { AuthLayout } from "@/shared/layouts/AuthLayout";
 import { Login } from "@/features/auth/login/Login";
 import { motion, Variants } from "framer-motion";
+import { API_URL } from "@/shared/api/client";
 
 type SocialButtonProps = {
   label: string;
@@ -78,6 +79,10 @@ const SocialButton: React.FC<SocialButtonProps> = ({ label, iconSrc, onClick }) 
 );
 
 export const LoginPage: React.FC = () => {
+  const handleGoogle = () => {
+    window.location.href = `${API_URL}/auth/google`;
+  };
+
   return (
     <AuthLayout>
       <PublicHeader />
@@ -102,7 +107,7 @@ export const LoginPage: React.FC = () => {
           </motion.div>
 
           <motion.div variants={socialRowVariants} className="relative z-10 flex items-center gap-4">
-            <SocialButton label="Google" iconSrc="/icons/auth/google.png" />
+            <SocialButton label="Google" iconSrc="/icons/auth/google.png" onClick={handleGoogle} />
             <SocialButton label="Facebook" iconSrc="/icons/auth/facebook.png" />
             <SocialButton label="GitHub" iconSrc="/icons/auth/github.png" />
             <SocialButton label="LinkedIn" iconSrc="/icons/auth/linkedin.png" />

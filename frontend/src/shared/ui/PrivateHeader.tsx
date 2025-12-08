@@ -1,10 +1,30 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { FiSettings, FiUser } from "react-icons/fi";
+import { FiLogOut, FiSettings, FiUser } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/shared/ui/ThemeToggle";
 import { LanguageSwitcher } from "@/shared/ui/LanguageSwitcher";
+import * as authApi from "@/shared/api/auth";
 
 export const PrivateHeader: React.FC = () => {
+  const navigate = useNavigate();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await authApi.logout();
+      localStorage.removeItem("accessToken");
+      navigate("/login");
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("Logout failed", error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
   return (
     <header className="fixed top-4 right-0 z-30">
       <motion.div
@@ -38,6 +58,18 @@ export const PrivateHeader: React.FC = () => {
             <span className="hidden sm:inline-block max-w-[120px] truncate">
               Профиль
             </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="inline-flex items-center gap-2 rounded-full bg-bg border border-border px-2 py-1.5 md:px-2.5 text-xs md:text-[13px] text-text hover:bg-surface hover:shadow-soft transition-all duration-150 active:scale-95 disabled:opacity-60"
+          >
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-danger/10 text-[13px] text-danger">
+              <FiLogOut className="h-4 w-4" />
+            </span>
+            <span className="hidden sm:inline-block">Выйти</span>
           </button>
         </div>
       </motion.div>
