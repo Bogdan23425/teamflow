@@ -29,7 +29,6 @@ export const BoardsControls: React.FC<BoardsControlsProps> = ({
       className="flex flex-col gap-3 md:gap-4"
     >
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        {/* Фильтры по типам досок */}
         <div className="inline-flex items-center gap-1.5 rounded-full bg-surface border border-border px-1.5 py-1">
           {BOARD_FILTERS.map((filter) => {
             const isActive = activeFilter === filter.id;
@@ -52,7 +51,6 @@ export const BoardsControls: React.FC<BoardsControlsProps> = ({
           })}
         </div>
 
-        {/* Поиск + переключатель вида */}
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
           <div className="w-full sm:w-64">
             <Input

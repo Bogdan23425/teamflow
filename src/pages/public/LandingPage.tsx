@@ -1,14 +1,13 @@
-// src/pages/public/LandingPage.tsx
 import React from "react";
 import { PublicHeader } from "@/shared/ui/PublicHeader";
-import { PublicBackground } from "@/shared/layout/PublicBackground";
 import { Home } from "@/features/home/Home";
+import { HomeLayout } from "@/shared/layouts/HomeLayout";
 
 export const LandingPage: React.FC = () => {
   return (
-    <PublicBackground>
+    <HomeLayout>
       <PublicHeader />
       <Home />
-    </PublicBackground>
+    </HomeLayout>
   );
 };

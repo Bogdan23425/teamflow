@@ -29,20 +29,18 @@ export const DayNightBackground: React.FC = () => {
 
       const gradient = ctx.createLinearGradient(0, 0, w, h);
 
-      // 🌞 Светлая тема — оставляем твою!
       const dayColors = [
         "#9dd6ff",
         "#75b8ff",
         "#bde6ff",
-        "#eaf6ff"
+        "#eaf6ff",
       ];
 
-      // 🌙 Тёмная тема — новая Calm Night палитра
       const nightColors = [
         "#050608",
         "#0a0b0f",
         "#11131a",
-        "#1a1d26"
+        "#1a1d26",
       ];
 
       const cols = isDark ? nightColors : dayColors;
@@ -55,14 +53,11 @@ export const DayNightBackground: React.FC = () => {
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, w, h);
 
-      //
-      // 🔥 Энергетический слой
-      //
       ctx.globalAlpha = isDark ? 0.14 : 0.12;
 
       const energyColor = isDark
-        ? "rgba(120,150,180,0.25)"   // спокойная энергия ночью
-        : "#ffffff";                // оставили твоё дневное облако
+        ? "rgba(120,150,180,0.25)"
+        : "#ffffff";
 
       for (let i = 0; i < 3; i++) {
         ctx.beginPath();
@@ -83,13 +78,10 @@ export const DayNightBackground: React.FC = () => {
 
       ctx.globalAlpha = 1;
 
-      //
-      // ✨ Спокойное ночное свечение (новое)
-      //
       if (isDark) {
         ctx.globalAlpha = 0.06;
 
-        const calmGlow = "rgba(80,105,140,0.15)"; // мягкое холодное свечение
+        const calmGlow = "rgba(80,105,140,0.15)";
 
         for (let i = 0; i < 4; i++) {
           ctx.beginPath();

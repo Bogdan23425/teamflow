@@ -1,6 +1,6 @@
 import React from "react";
 import { PublicHeader } from "@/shared/ui/PublicHeader";
-import { DayNightBackground } from "@/shared/ui/backgrounds/DayNightBackground";
+import { AuthLayout } from "@/shared/layouts/AuthLayout";
 import { Register } from "@/features/auth/register/Register";
 import { motion, Variants } from "framer-motion";
 
@@ -79,8 +79,7 @@ const SocialButton: React.FC<SocialButtonProps> = ({ label, iconSrc, onClick }) 
 
 export const RegisterPage: React.FC = () => {
   return (
-    <>
-      <DayNightBackground />
+    <AuthLayout>
       <PublicHeader />
 
       <div className="tf-container min-h-[calc(100vh-80px)] flex items-center justify-center py-10 md:py-16 relative z-10">
@@ -110,6 +109,6 @@ export const RegisterPage: React.FC = () => {
           </motion.div>
         </motion.div>
       </div>
-    </>
+    </AuthLayout>
   );
 };

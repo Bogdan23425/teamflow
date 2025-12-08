@@ -32,7 +32,7 @@ const roleLabel: Record<string, string> = {
 
 export const TeamManagement: React.FC = () => {
   return (
-    <main className="flex-1 bg-bg">
+    <main className="flex-1">
       <div className="w-full px-4 md:px-6 lg:px-8 py-6 md:py-8 flex flex-col gap-6 md:gap-7">
         <motion.header
           initial={{ opacity: 0, y: 10 }}

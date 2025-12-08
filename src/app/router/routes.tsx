@@ -11,12 +11,10 @@ import { BoardDetailPage } from "@/pages/private/BoardDetailPage";
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      {/* Публичные */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      {/* Приватные */}
       <Route path="/app" element={<DashboardPage />} />
       <Route path="/boards" element={<BoardsPage />} />
       <Route path="/boards/:id" element={<BoardDetailPage />} />

@@ -1,4 +1,3 @@
-// src/shared/ui/PublicHeader.tsx
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/shared/ui/Button";
@@ -19,7 +18,6 @@ export const PublicHeader: React.FC = () => {
             borderRadius: "24px",
           }}
         >
-          {/* ЛОГО */}
           <Link to="/" className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-soft">
               <span className="text-xs font-semibold text-primary">TF</span>
@@ -35,7 +33,6 @@ export const PublicHeader: React.FC = () => {
             </div>
           </Link>
 
-          {/* КОНТРОЛЫ */}
           <div className="flex items-center gap-2">
             <LanguageSwitcher />
             <ThemeToggle />

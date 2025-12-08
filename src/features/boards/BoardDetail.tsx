@@ -1,5 +1,3 @@
-// src/features/boards/BoardDetail.tsx
-
 import React from "react";
 import { useParams } from "react-router-dom";
 import { MOCK_BOARD_DETAILS } from "./mocks";
@@ -13,7 +11,6 @@ export const BoardDetail: React.FC = () => {
   React.useEffect(() => {
     if (!id) return;
 
-    // эмуляция "запроса"
     const timer = setTimeout(() => {
       setData(MOCK_BOARD_DETAILS[id] ?? null);
       setLoading(false);

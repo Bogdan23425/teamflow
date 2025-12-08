@@ -1,4 +1,3 @@
-// src/features/boards/mocks.ts
 import {
   Board,
   BoardFilterId,
@@ -70,7 +69,6 @@ export const MOCK_BOARDS: Board[] = [
   },
 ];
 
-// Моки для детальной страницы доски /boards/:id
 export const MOCK_BOARD_DETAILS: Record<string, BoardDetail> = {
   "team-dev": {
     id: "team-dev",

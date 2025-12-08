@@ -3,14 +3,13 @@
 @tailwind utilities;
 
 :root {
-  --color-bg: #f5f5f7;
-  --color-surface: #ffffff;
-  --color-border: #e1e1e6;
+  --color-bg: #f3f5fb;
+  --color-surface: #f8f9fd;
+  --color-border: #dfe4f0;
 
   --color-text: #111827;
   --color-text-muted: #6b7280;
 
-  /* светлая тема — можно пока оставить синим */
   --color-primary: #2563eb;
   --color-primary-soft: rgba(37, 99, 235, 0.08);
 
@@ -39,16 +38,14 @@
   --layout-max-width: 1120px;
 }
 
-/* тёмная тема без синего, нейтральный тёмный + тёплый акцент */
 :root[data-theme="dark"] {
-  --color-bg: #050608;       /* глубокий нейтральный фон, без синего оттенка */
-  --color-surface: #0c0d10;  /* чуть светлее, для карточек/панелей */
-  --color-border: #27272f;   /* нейтральная серая граница */
+  --color-bg: #050608;
+  --color-surface: #0c0d10;
+  --color-border: #27272f;
 
   --color-text: #e5e7eb;
   --color-text-muted: #9ca3af;
 
-  /* тёплый акцент вместо синего (что-то вроде modern orange) */
   --color-primary: #f97316;
   --color-primary-soft: rgba(249, 115, 22, 0.18);
 
@@ -64,6 +61,7 @@ body,
   margin: 0;
   padding: 0;
   height: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
