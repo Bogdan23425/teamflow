@@ -41,6 +41,3 @@ googleRouter.get(
     })(req, res, next);
   }
 );
-
-// optional: simple success redirect could be added here to FRONTEND_ORIGIN
-// but for now we return JSON with tokens like other auth routes

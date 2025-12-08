@@ -1,16 +1,11 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BoardType } from "../types";
 import { Input } from "@/shared/ui/Input";
 
 interface CreateBoardModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (payload: {
-    name: string;
-    type: BoardType;
-    description: string;
-  }) => void;
+  onCreate: (payload: { name: string; description: string }) => void;
 }
 
 export const CreateBoardModal: React.FC<CreateBoardModalProps> = ({
@@ -19,7 +14,6 @@ export const CreateBoardModal: React.FC<CreateBoardModalProps> = ({
   onCreate,
 }) => {
   const [name, setName] = React.useState("");
-  const [type, setType] = React.useState<BoardType>("team");
   const [description, setDescription] = React.useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -29,12 +23,10 @@ export const CreateBoardModal: React.FC<CreateBoardModalProps> = ({
 
     onCreate({
       name: trimmedName,
-      type,
       description: description.trim(),
     });
 
     setName("");
-    setType("team");
     setDescription("");
   };
 
@@ -48,7 +40,7 @@ export const CreateBoardModal: React.FC<CreateBoardModalProps> = ({
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="w-full max-w-md mx-4 rounded-lg-tf border border-border bg-surface shadow-soft p-5 sm:p-6 flex flex-col gap-4"
+            className="w-full max-w-lg mx-4 rounded-[20px] border border-border bg-surface shadow-soft p-5 sm:p-6 flex flex-col gap-4"
             initial={{ opacity: 0, y: 16, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.96 }}
@@ -60,7 +52,7 @@ export const CreateBoardModal: React.FC<CreateBoardModalProps> = ({
                   Новая доска
                 </h2>
                 <p className="text-xs text-text-muted mt-0.5">
-                  Назови доску и выбери тип — это можно будет поменять позже.
+                  Назови доску и коротко опиши, зачем она команде.
                 </p>
               </div>
               <button
@@ -72,29 +64,23 @@ export const CreateBoardModal: React.FC<CreateBoardModalProps> = ({
               </button>
             </div>
 
-            <form className="flex flex-col gap-3.5" onSubmit={handleSubmit}>
-              <Input
-                label="Название доски"
-                placeholder="Например, «Команда разработки»"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                type="text"
-              />
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-text">
-                  Тип доски
-                </label>
-                <select
-                  value={type}
-                  onChange={(e) => setType(e.target.value as BoardType)}
-                  className="h-9 rounded-md-tf bg-bg border border-border px-3 text-xs md:text-sm text-text focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-                >
-                  <option value="team">Командная</option>
-                  <option value="personal">Личная</option>
-                  <option value="sprint">Спринт</option>
-                  <option value="backlog">Бэклог</option>
-                </select>
+            <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-xs text-text-muted">
+                  <label className="font-medium text-text text-[13px]">
+                    Название доски
+                  </label>
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] text-primary">
+                    Обязательное
+                  </span>
+                </div>
+                <Input
+                  label={undefined}
+                  placeholder="Например, «Команда разработки»"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  type="text"
+                />
               </div>
 
               <div className="flex flex-col gap-1.5">
@@ -104,10 +90,13 @@ export const CreateBoardModal: React.FC<CreateBoardModalProps> = ({
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Коротко опиши, для чего эта доска."
+                  placeholder="Коротко: чем занимается команда и что будет на доске."
                   rows={3}
                   className="rounded-md-tf bg-bg border border-border px-3 py-2 text-xs md:text-sm text-text placeholder:text-text-muted/70 resize-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                 />
+                <div className="text-[11px] text-text-muted">
+                  Можно добавить позже. Помогает понять контекст доски.
+                </div>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-1">

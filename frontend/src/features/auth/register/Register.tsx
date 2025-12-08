@@ -12,6 +12,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { Toast, ToastViewport } from "@/shared/ui/Toast";
 import * as authApi from "@/shared/api/auth";
+import { isApiError } from "@/shared/api/client";
 
 interface RegisterErrors {
   email?: string;
@@ -113,8 +114,14 @@ export const Register: React.FC = () => {
         setIsSubmitting(false);
       }, 2500);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Не удалось создать аккаунт";
-      setFormError(message);
+      if (isApiError(err)) {
+        if (err.fieldErrors) {
+          setErrors((prev) => ({ ...prev, ...err.fieldErrors }));
+        }
+        setFormError(err.message);
+      } else {
+        setFormError("Не удалось создать аккаунт");
+      }
       setIsSubmitting(false);
     }
   };

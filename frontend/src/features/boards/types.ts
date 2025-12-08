@@ -8,6 +8,26 @@ export interface Board {
   tasks: number;
   type: BoardType;
   updatedAt: string;
+  progress?: number;
+  backgroundUrl?: string;
+}
+
+export interface BoardColumn {
+  id: string;
+  boardId: string;
+  title: string;
+  order: number;
+  createdAt: string;
+  tasks: BoardTask[];
+}
+
+export interface BoardTask {
+  id: string;
+  columnId: string;
+  title: string;
+  description?: string;
+  coverColor?: string;
+  createdAt: string;
 }
 
 export type BoardFilterId = "all" | "team" | "personal" | "sprint" | "backlog";

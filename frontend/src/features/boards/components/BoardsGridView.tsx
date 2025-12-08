@@ -1,15 +1,18 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Board } from "../types";
+import { BoardActionsMenu } from "./BoardActionsMenu";
 
 interface BoardsGridViewProps {
   boards: Board[];
   onOpenBoard: (id: string) => void;
+  onDeleteBoard: (id: string) => void;
 }
 
 export const BoardsGridView: React.FC<BoardsGridViewProps> = ({
   boards,
   onOpenBoard,
+  onDeleteBoard,
 }) => {
   return (
     <motion.div
@@ -48,9 +51,12 @@ export const BoardsGridView: React.FC<BoardsGridViewProps> = ({
               <span className="inline-flex items-center rounded-full border border-border px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-text-muted bg-bg">
                 {board.status}
               </span>
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-bg text-[10px] text-text-muted group-hover:text-primary transition-colors duration-200">
-                →
-              </span>
+              <div className="flex items-center gap-1">
+                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-bg text-[10px] text-text-muted group-hover:text-primary transition-colors duration-200">
+                  →
+                </span>
+                <BoardActionsMenu onDelete={() => onDeleteBoard(board.id)} />
+              </div>
             </div>
 
             <h2 className="relative text-sm md:text-base font-semibold mb-1.5 text-text group-hover:text-primary transition-colors duration-200">

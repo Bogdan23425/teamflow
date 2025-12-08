@@ -3,12 +3,24 @@ import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
+import { rateLimit } from "express-rate-limit";
 import { env } from "./config/env.js";
 import { router as authRouter } from "./routes/auth/index.js";
 import { passport } from "./config/passport.js";
+import { boardsRouter } from "./routes/boards.js";
 
 export function createApp() {
   const app = express();
+
+  app.set("trust proxy", 1);
+
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 30,
+    standardHeaders: "draft-7",
+    legacyHeaders: false,
+    message: { error: "Слишком много попыток, попробуйте позже" }
+  });
 
   app.use(
     cors({
@@ -16,7 +28,12 @@ export function createApp() {
       credentials: true
     })
   );
-  app.use(helmet());
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: false,
+      referrerPolicy: { policy: "no-referrer" }
+    })
+  );
   app.use(express.json());
   app.use(cookieParser());
   app.use(passport.initialize());
@@ -26,7 +43,8 @@ export function createApp() {
     res.json({ status: "ok" });
   });
 
-  app.use("/auth", authRouter);
+  app.use("/auth", authLimiter, authRouter);
+  app.use("/boards", boardsRouter);
 
   app.use((_req, res) => {
     res.status(404).json({ error: "Not found" });

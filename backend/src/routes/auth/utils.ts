@@ -28,8 +28,10 @@ export function sendAuthRedirect(res: Response, user: UserShape) {
 
   res.cookie("refreshToken", refreshToken, cookieOptions());
 
+  const dashboardPath = normalizeDashboardPath(env.FRONTEND_DASHBOARD_PATH);
   const redirectTarget =
-    env.FRONTEND_SUCCESS_REDIRECT ?? `${env.FRONTEND_ORIGIN.replace(/\/$/, "")}/app`;
+    env.FRONTEND_SUCCESS_REDIRECT ??
+    `${env.FRONTEND_ORIGIN.replace(/\/$/, "")}${dashboardPath}`;
 
   const html = `<!DOCTYPE html>
   <html lang="en">
@@ -56,7 +58,7 @@ export function cookieOptions() {
   return {
     httpOnly: true,
     secure: isProd,
-    sameSite: isProd ? "lax" : "lax",
+    sameSite: isProd ? "strict" : "lax",
     path: "/",
     maxAge: 1000 * 60 * 60 * 24 * 30
   } as const;
@@ -65,4 +67,9 @@ export function cookieOptions() {
 export function clearCookieOptions() {
   const { maxAge, ...rest } = cookieOptions();
   return rest;
+}
+
+function normalizeDashboardPath(value: string) {
+  if (!value) return "/app";
+  return value.startsWith("/") ? value : `/${value}`;
 }

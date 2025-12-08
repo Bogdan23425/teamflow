@@ -1,66 +1,33 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { CreateBoardModal } from "@/features/boards/components/CreateBoardModal";
+import { createBoard, fetchBoards } from "@/shared/api/boards";
+import { Board } from "@/features/boards/types";
+import { getBoardsCache, setBoardsCache } from "@/shared/store/boardsCache";
 
-const boards = [
-  {
-    id: "team",
-    title: "Командная доска",
-    description: "Задачи всей команды, статусы и приоритеты в одном месте.",
-    badge: "Основная",
-    kind: "team" as const,
-    tasks: 24,
-    progress: 0.7,
-  },
-  {
-    id: "me",
-    title: "Мои задачи",
-    description: "Все задачи, назначенные на тебя, без шума и отвлечений.",
-    badge: "Фокус",
-    kind: "personal" as const,
-    tasks: 12,
-    progress: 0.5,
-  },
-  {
-    id: "sprint",
-    title: "Спринт",
-    description: "Текущий спринт, дедлайны и прогресс по ключевым задачам.",
-    badge: "Спринт",
-    kind: "sprint" as const,
-    tasks: 18,
-    progress: 0.6,
-  },
-  {
-    id: "backlog",
-    title: "Бэклог",
-    description: "Идеи и задачи на потом, аккуратно организованные по темам.",
-    badge: "Бэклог",
-    kind: "backlog" as const,
-    tasks: 56,
-    progress: 0.2,
-  },
-];
+type BoardCard = Board & { badge?: string; progress?: number };
 
 const todayTasks = [
   {
     id: "t1",
     title: "Обновить спринт команды",
     board: "Командная доска",
-    due: "Сегодня",
-    dueTone: "danger" as const,
+    due: "Сегодня · 18:00",
+    tone: "danger" as const,
   },
   {
     id: "t2",
     title: "Проверить задачи в бэклоге",
     board: "Бэклог",
     due: "На этой неделе",
-    dueTone: "muted" as const,
+    tone: "muted" as const,
   },
   {
     id: "t3",
     title: "Согласовать цели следующего спринта",
     board: "Спринт",
     due: "Завтра",
-    dueTone: "muted" as const,
+    tone: "danger" as const,
   },
 ];
 
@@ -94,15 +61,79 @@ const teamLoad = [
 type BoardFilter = "all" | "focus" | "team";
 
 export const Dashboard: React.FC = () => {
+  const [isCreateOpen, setIsCreateOpen] = React.useState(false);
   const [boardFilter, setBoardFilter] = React.useState<BoardFilter>("all");
+  const [boardCards, setBoardCards] = React.useState<BoardCard[]>([]);
+  const [isBoardsLoading, setIsBoardsLoading] = React.useState(false);
+  const hasFetchedOnceRef = React.useRef(false);
+
+  React.useEffect(() => {
+    const loadBoards = async () => {
+      if (hasFetchedOnceRef.current) return;
+      hasFetchedOnceRef.current = true;
+
+      const cached = getBoardsCache();
+      if (cached) {
+        setBoardCards(
+          cached.map((board) => ({
+            ...board,
+            badge: board.status || "Доска",
+            progress: board.progress ?? 0,
+          }))
+        );
+        return;
+      }
+
+      setIsBoardsLoading(true);
+      try {
+        const data = await fetchBoards();
+        const mapped = data.map((board) => ({
+          ...board,
+          badge: board.status || "Доска",
+          progress: board.progress ?? 0,
+        }));
+        setBoardCards(mapped);
+        setBoardsCache(mapped);
+      } finally {
+        setIsBoardsLoading(false);
+      }
+    };
+
+    loadBoards();
+  }, []);
 
   const filteredBoards = React.useMemo(() => {
-    if (boardFilter === "all") return boards;
+    if (boardFilter === "all") return boardCards;
     if (boardFilter === "focus") {
-      return boards.filter((b) => b.kind === "personal" || b.kind === "sprint");
+      return boardCards.filter(
+        (b) => b.type === "personal" || b.type === "sprint"
+      );
     }
-    return boards.filter((b) => b.kind === "team");
-  }, [boardFilter]);
+    return boardCards.filter((b) => b.type === "team");
+  }, [boardFilter, boardCards]);
+
+  const handleOpenCreate = () => setIsCreateOpen(true);
+  const handleCloseCreate = () => setIsCreateOpen(false);
+  const handleCreateBoard = (payload: {
+    name: string;
+    description: string;
+  }) => {
+    const run = async () => {
+      const created = await createBoard(payload);
+      const mapped: BoardCard = {
+        ...created,
+        badge: created.status || "Новая",
+        progress: created.progress ?? 0,
+      };
+      setBoardCards((prev) => {
+        const next = [mapped, ...prev];
+        setBoardsCache(next);
+        return next;
+      });
+    };
+
+    run().finally(handleCloseCreate);
+  };
 
   return (
     <main className="flex-1">
@@ -126,7 +157,11 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-3 mt-2 md:mt-0">
-            <button className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-xs md:text-sm font-medium text-white shadow-soft hover:shadow-strong active:scale-[0.97] transition-[transform,box-shadow,background-color] duration-150">
+            <button
+              type="button"
+              onClick={handleOpenCreate}
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-xs md:text-sm font-medium text-white shadow-soft hover:shadow-strong active:scale-[0.97] transition-[transform,box-shadow,background-color] duration-150"
+            >
               <span className="h-5 w-5 rounded-full bg-primary-soft flex items-center justify-center text-[13px] text-text">
                 +
               </span>
@@ -184,7 +219,12 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {filteredBoards.map((board, index) => (
+            {isBoardsLoading && filteredBoards.length === 0 ? (
+              <div className="col-span-full rounded-lg-tf border border-border bg-surface p-4 text-sm text-text-muted">
+                Загружаем доски…
+              </div>
+            ) : (
+              filteredBoards.map((board, index) => (
               <motion.button
                 key={board.id}
                 type="button"
@@ -209,7 +249,7 @@ export const Dashboard: React.FC = () => {
 
                 <div className="relative flex items-center justify-between gap-2 mb-3">
                   <span className="inline-flex items-center rounded-full border border-border px-2.5 py-1 text-[11px] uppercase tracking-[0.16em] text-text-muted bg-bg">
-                    {board.badge}
+                    {board.badge ?? "Доска"}
                   </span>
                   <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-bg text-[10px] text-text-muted group-hover:text-primary transition-colors duration-200">
                     →
@@ -217,7 +257,7 @@ export const Dashboard: React.FC = () => {
                 </div>
 
                 <h2 className="relative text-sm md:text-base font-semibold mb-1.5 text-text group-hover:text-primary transition-colors duration-200">
-                  {board.title}
+                  {board.name}
                 </h2>
                 <p className="relative text-xs text-text-muted leading-relaxed">
                   {board.description}
@@ -230,17 +270,18 @@ export const Dashboard: React.FC = () => {
                     <span className="h-1 w-10 overflow-hidden rounded-full bg-bg">
                       <span
                         className="block h-full rounded-full bg-primary"
-                        style={{ width: `${board.progress * 100}%` }}
+                        style={{ width: `${(board.progress ?? 0) * 100}%` }}
                       />
                     </span>
                   </span>
                 </div>
               </motion.button>
-            ))}
+              ))
+            )}
           </div>
         </motion.section>
 
-        <section className="mt-2 grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.3fr)]">
+        <section className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -250,13 +291,17 @@ export const Dashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-text">Сегодня</h3>
               <span className="text-[11px] text-text-muted">
-                {todayTasks.length} активные задачи
+                {todayTasks.length} задачи
               </span>
             </div>
+
             <div className="space-y-2.5">
-              {todayTasks.map((task) => (
-                <div
+              {todayTasks.map((task, index) => (
+                <motion.div
                   key={task.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25, delay: 0.05 * index }}
                   className="flex items-center justify-between rounded-md-tf bg-surface-variant px-3 py-2.5"
                 >
                   <div className="flex flex-col">
@@ -269,15 +314,15 @@ export const Dashboard: React.FC = () => {
                   </div>
                   <span
                     className={[
-                      "text-[11px]",
-                      task.dueTone === "danger"
-                        ? "text-danger"
-                        : "text-text-muted",
+                      "inline-flex items-center rounded-full px-2 py-1 text-[10px] uppercase tracking-[0.12em]",
+                      task.tone === "danger"
+                        ? "bg-danger/10 text-danger"
+                        : "bg-bg text-text-muted",
                     ].join(" ")}
                   >
                     {task.due}
                   </span>
-                </div>
+                </motion.div>
               ))}
             </div>
           </motion.div>
@@ -331,6 +376,12 @@ export const Dashboard: React.FC = () => {
           </motion.div>
         </section>
       </div>
+
+      <CreateBoardModal
+        isOpen={isCreateOpen}
+        onClose={handleCloseCreate}
+        onCreate={handleCreateBoard}
+      />
     </main>
   );
 };

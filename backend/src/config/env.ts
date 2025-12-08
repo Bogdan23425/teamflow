@@ -11,6 +11,7 @@ const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(16, "JWT_REFRESH_SECRET too short"),
   FRONTEND_ORIGIN: z.string().url({ message: "FRONTEND_ORIGIN must be a valid URL" }),
   FRONTEND_SUCCESS_REDIRECT: z.string().url({ message: "FRONTEND_SUCCESS_REDIRECT must be a valid URL" }).optional(),
+  FRONTEND_DASHBOARD_PATH: z.string().default("/app"),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   GITHUB_CLIENT_ID: z.string().optional(),

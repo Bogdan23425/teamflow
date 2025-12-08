@@ -5,6 +5,7 @@
 :root {
   --color-bg: #f3f5fb;
   --color-surface: #f8f9fd;
+  --color-card: #ffffff;
   --color-border: #dfe4f0;
 
   --color-text: #111827;
@@ -39,20 +40,21 @@
 }
 
 :root[data-theme="dark"] {
-  --color-bg: #050608;
-  --color-surface: #0c0d10;
-  --color-border: #27272f;
+  --color-bg: #0e1116;        /* тёмный фон без синевы */
+  --color-surface: #151920;   /* панели */
+  --color-card: #1c212b;      /* карточки и кнопки */
+  --color-border: #2a303a;
 
-  --color-text: #e5e7eb;
-  --color-text-muted: #9ca3af;
+  --color-text: #e9ecf1;
+  --color-text-muted: #acb1bc;
 
-  --color-primary: #f97316;
-  --color-primary-soft: rgba(249, 115, 22, 0.18);
+  --color-primary: #6d8fd1;         /* более глубокий синий акцент */
+  --color-primary-soft: rgba(109, 143, 209, 0.22);
 
   --color-danger: #f97373;
   --color-success: #4ade80;
 
-  --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.55);
+  --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.45);
 }
 
 html,
@@ -84,6 +86,9 @@ body {
 
   .bg-surface {
     background-color: var(--color-surface);
+  }
+  .bg-card {
+    background-color: var(--color-card);
   }
 
   .border-border {

@@ -1,12 +1,9 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { BOARD_FILTERS } from "../mocks";
-import { BoardFilterId, BoardsViewMode } from "../types";
+import { BoardsViewMode } from "../types";
 import { Input } from "@/shared/ui/Input";
 
 interface BoardsControlsProps {
-  activeFilter: BoardFilterId;
-  onFilterChange: (id: BoardFilterId) => void;
   view: BoardsViewMode;
   onViewChange: (view: BoardsViewMode) => void;
   search: string;
@@ -14,8 +11,6 @@ interface BoardsControlsProps {
 }
 
 export const BoardsControls: React.FC<BoardsControlsProps> = ({
-  activeFilter,
-  onFilterChange,
   view,
   onViewChange,
   search,
@@ -28,41 +23,12 @@ export const BoardsControls: React.FC<BoardsControlsProps> = ({
       transition={{ duration: 0.24, ease: "easeOut" }}
       className="flex flex-col gap-3 md:gap-4"
     >
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="inline-flex items-center gap-1.5 rounded-full bg-surface border border-border px-1.5 py-1">
-          {BOARD_FILTERS.map((filter) => {
-            const isActive = activeFilter === filter.id;
-
-            return (
-              <button
-                key={filter.id}
-                type="button"
-                onClick={() => onFilterChange(filter.id)}
-                className={[
-                  "relative rounded-full px-3 py-1.5 text-xs md:text-[13px] transition-all duration-150",
-                  isActive
-                    ? "bg-primary text-white shadow-soft"
-                    : "text-text-muted hover:text-text hover:bg-bg",
-                ].join(" ")}
-              >
-                {filter.label}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-          <div className="w-full sm:w-64">
-            <Input
-              value={search}
-              onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Поиск по названию или описанию…"
-              type="text"
-              className="text-xs md:text-sm h-9 rounded-full border-border bg-surface"
-            />
-          </div>
-
-          <div className="inline-flex items-center self-start sm:self-auto rounded-full bg-surface border border-border p-1 text-[11px] md:text-xs">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-xs text-text-muted">
+          Список всех досок. Переключай вид или используй поиск.
+        </p>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="inline-flex items-center rounded-full bg-surface border border-border p-1 text-[11px] md:text-xs">
             <button
               type="button"
               onClick={() => onViewChange("grid")}
@@ -73,7 +39,7 @@ export const BoardsControls: React.FC<BoardsControlsProps> = ({
                   : "text-text-muted hover:text-text",
               ].join(" ")}
             >
-              Сетка
+              Карточки
             </button>
             <button
               type="button"
@@ -87,6 +53,16 @@ export const BoardsControls: React.FC<BoardsControlsProps> = ({
             >
               Список
             </button>
+          </div>
+
+          <div className="w-full sm:w-72">
+            <Input
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Поиск по названию или описанию…"
+              type="text"
+              className="text-xs md:text-sm h-9 rounded-full border-border bg-surface"
+            />
           </div>
         </div>
       </div>
