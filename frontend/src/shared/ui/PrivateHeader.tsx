@@ -26,7 +26,7 @@ export const PrivateHeader: React.FC = () => {
   };
 
   return (
-    <header className="fixed top-4 right-0 z-30">
+    <header className="fixed top-4 right-4 z-40">
       <motion.div
         initial={{ opacity: 0, y: -6, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}

@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 enum AuthProvider {
@@ -13,6 +14,19 @@ enum AuthProvider {
   GITHUB
   LINKEDIN
   FACEBOOK
+}
+
+enum BoardType {
+  TEAM
+  PERSONAL
+  SPRINT
+  BACKLOG
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
 }
 
 model User {
@@ -25,5 +39,58 @@ model User {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
+  boards      Board[]
+
   @@index([provider, providerId])
+}
+
+model Board {
+  id            String        @id @default(cuid())
+  name          String
+  description   String        @default("")
+  status        String        @default("Активна")
+  type          BoardType     @default(TEAM)
+  backgroundUrl String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  ownerId       String?
+
+  owner   User?         @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  columns BoardColumn[]
+  tasks   BoardTask[]
+
+  @@index([ownerId])
+}
+
+model BoardColumn {
+  id        String      @id @default(cuid())
+  boardId   String
+  title     String
+  order     Int
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  board Board       @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  tasks BoardTask[]
+
+  @@index([boardId])
+  @@unique([boardId, order])
+}
+
+model BoardTask {
+  id          String      @id @default(cuid())
+  boardId     String
+  columnId    String
+  title       String
+  description String      @default("")
+  coverColor  String?
+  status      TaskStatus  @default(TODO)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  board  Board       @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  column BoardColumn @relation(fields: [columnId], references: [id], onDelete: Cascade)
+
+  @@index([boardId])
+  @@index([columnId])
 }

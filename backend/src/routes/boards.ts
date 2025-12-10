@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { randomUUID } from "crypto";
 import { z } from "zod";
+import type { Board as PrismaBoard, BoardType as PrismaBoardType } from "@prisma/client";
+import { prisma } from "../lib/prisma.js";
 
-type Board = {
+type BoardResponse = {
   id: string;
   name: string;
   description: string;
@@ -10,31 +11,10 @@ type Board = {
   tasks: number;
   type: "team" | "personal" | "sprint" | "backlog";
   updatedAt: string;
-  backgroundUrl?: string;
+  backgroundUrl?: string | null;
 };
 
-type BoardColumn = {
-  id: string;
-  boardId: string;
-  title: string;
-  order: number;
-  tasks: BoardTask[];
-  createdAt: string;
-};
-
-type BoardTask = {
-  id: string;
-  columnId: string;
-  title: string;
-  description?: string;
-  coverColor?: string;
-  createdAt: string;
-};
-
-const initialBoards: Board[] = [];
-
-const boardsStore: Board[] = [...initialBoards];
-const boardColumnsStore: Record<string, BoardColumn[]> = {};
+type BoardWithCount = PrismaBoard & { _count: { tasks: number } };
 
 const createBoardSchema = z.object({
   name: z.string().min(1, "Название обязательно"),
@@ -57,11 +37,16 @@ const updateBackgroundSchema = z.object({
 
 export const boardsRouter = Router();
 
-boardsRouter.get("/", (_req, res) => {
-  res.json(boardsStore);
+boardsRouter.get("/", async (_req, res) => {
+  const boards = await prisma.board.findMany({
+    orderBy: { updatedAt: "desc" },
+    include: { _count: { select: { tasks: true } } }
+  });
+
+  return res.json(boards.map(toBoardResponse));
 });
 
-boardsRouter.post("/", (req, res) => {
+boardsRouter.post("/", async (req, res) => {
   const parsed = createBoardSchema.safeParse(req.body);
 
   if (!parsed.success) {
@@ -73,35 +58,37 @@ boardsRouter.post("/", (req, res) => {
   }
 
   const { name, description } = parsed.data;
-  const board: Board = {
-    id: randomUUID(),
-    name,
-    description: description ?? "",
-    status: "Активна",
-    tasks: 0,
-    type: "team",
-    updatedAt: new Date().toISOString(),
-    backgroundUrl: undefined
-  };
+  const board = await prisma.board.create({
+    data: {
+      name: name.trim(),
+      description: description?.trim() ?? "",
+      status: "Активна",
+      type: "TEAM"
+    }
+  });
 
-  boardsStore.unshift(board);
-  res.status(201).json(board);
+  return res.status(201).json(
+    toBoardResponse({
+      ...board,
+      _count: { tasks: 0 }
+    })
+  );
 });
 
-boardsRouter.get("/:id", (req, res) => {
-  const board = boardsStore.find((b) => b.id === req.params.id);
+boardsRouter.get("/:id", async (req, res) => {
+  const board = await prisma.board.findUnique({
+    where: { id: req.params.id },
+    include: { _count: { select: { tasks: true } } }
+  });
+
   if (!board) {
     return res.status(404).json({ error: "Board not found" });
   }
-  return res.json(board);
+
+  return res.json(toBoardResponse(board));
 });
 
-boardsRouter.patch("/:id/background", (req, res) => {
-  const board = boardsStore.find((b) => b.id === req.params.id);
-  if (!board) {
-    return res.status(404).json({ error: "Board not found" });
-  }
-
+boardsRouter.patch("/:id/background", async (req, res) => {
   const parsed = updateBackgroundSchema.safeParse(req.body);
   if (!parsed.success) {
     const fieldErrors = parsed.error.flatten().fieldErrors;
@@ -111,31 +98,44 @@ boardsRouter.patch("/:id/background", (req, res) => {
     });
   }
 
-  board.backgroundUrl = parsed.data.backgroundUrl || undefined;
-  board.updatedAt = new Date().toISOString();
-  return res.json({ success: true, backgroundUrl: board.backgroundUrl });
-});
+  try {
+    const updated = await prisma.board.update({
+      where: { id: req.params.id },
+      data: { backgroundUrl: parsed.data.backgroundUrl || null }
+    });
 
-boardsRouter.delete("/:id", (req, res) => {
-  const index = boardsStore.findIndex((b) => b.id === req.params.id);
-  if (index === -1) {
+    return res.json({ success: true, backgroundUrl: updated.backgroundUrl });
+  } catch {
     return res.status(404).json({ error: "Board not found" });
   }
-  const [removed] = boardsStore.splice(index, 1);
-  return res.json({ success: true, removedId: removed.id });
 });
 
-boardsRouter.get("/:id/columns", (req, res) => {
-  const board = boardsStore.find((b) => b.id === req.params.id);
+boardsRouter.delete("/:id", async (req, res) => {
+  try {
+    const removed = await prisma.board.delete({ where: { id: req.params.id } });
+    return res.json({ success: true, removedId: removed.id });
+  } catch {
+    return res.status(404).json({ error: "Board not found" });
+  }
+});
+
+boardsRouter.get("/:id/columns", async (req, res) => {
+  const board = await prisma.board.findUnique({ where: { id: req.params.id } });
   if (!board) {
     return res.status(404).json({ error: "Board not found" });
   }
-  const columns = boardColumnsStore[board.id] ?? [];
+
+  const columns = await prisma.boardColumn.findMany({
+    where: { boardId: req.params.id },
+    orderBy: { order: "asc" },
+    include: { tasks: { orderBy: { createdAt: "asc" } } }
+  });
+
   return res.json(columns);
 });
 
-boardsRouter.post("/:id/columns", (req, res) => {
-  const board = boardsStore.find((b) => b.id === req.params.id);
+boardsRouter.post("/:id/columns", async (req, res) => {
+  const board = await prisma.board.findUnique({ where: { id: req.params.id } });
   if (!board) {
     return res.status(404).json({ error: "Board not found" });
   }
@@ -149,25 +149,21 @@ boardsRouter.post("/:id/columns", (req, res) => {
     });
   }
 
-  const columns = boardColumnsStore[board.id] ?? [];
-  const nextColumn: BoardColumn = {
-    id: randomUUID(),
-    boardId: board.id,
-    title: parsed.data.title.trim(),
-    order: columns.length,
-    tasks: [],
-    createdAt: new Date().toISOString()
-  };
+  const columnsCount = await prisma.boardColumn.count({ where: { boardId: board.id } });
+  const created = await prisma.boardColumn.create({
+    data: {
+      boardId: board.id,
+      title: parsed.data.title.trim(),
+      order: columnsCount
+    }
+  });
+  await touchBoard(board.id);
 
-  const updated = [...columns, nextColumn];
-  boardColumnsStore[board.id] = updated;
-  board.updatedAt = new Date().toISOString();
-
-  return res.status(201).json(nextColumn);
+  return res.status(201).json({ ...created, tasks: [] });
 });
 
-boardsRouter.post("/:id/columns/:columnId/tasks", (req, res) => {
-  const board = boardsStore.find((b) => b.id === req.params.id);
+boardsRouter.post("/:id/columns/:columnId/tasks", async (req, res) => {
+  const board = await prisma.board.findUnique({ where: { id: req.params.id } });
   if (!board) {
     return res.status(404).json({ error: "Board not found" });
   }
@@ -181,59 +177,60 @@ boardsRouter.post("/:id/columns/:columnId/tasks", (req, res) => {
     });
   }
 
-  const columns = boardColumnsStore[board.id] ?? [];
-  const column = columns.find((c) => c.id === req.params.columnId);
+  const column = await prisma.boardColumn.findFirst({
+    where: { id: req.params.columnId, boardId: board.id }
+  });
   if (!column) {
     return res.status(404).json({ error: "Column not found" });
   }
 
-  const task: BoardTask = {
-    id: randomUUID(),
-    columnId: column.id,
-    title: parsed.data.title.trim(),
-    description: "",
-    coverColor: undefined,
-    createdAt: new Date().toISOString()
-  };
+  const task = await prisma.boardTask.create({
+    data: {
+      boardId: board.id,
+      columnId: column.id,
+      title: parsed.data.title.trim()
+    }
+  });
+  await touchBoard(board.id);
 
-  column.tasks.push(task);
-  board.updatedAt = new Date().toISOString();
   return res.status(201).json(task);
 });
 
-boardsRouter.delete("/:id/columns/:columnId", (req, res) => {
-  const board = boardsStore.find((b) => b.id === req.params.id);
-  if (!board) {
-    return res.status(404).json({ error: "Board not found" });
-  }
-  const columns = boardColumnsStore[board.id] ?? [];
-  const index = columns.findIndex((c) => c.id === req.params.columnId);
-  if (index === -1) {
-    return res.status(404).json({ error: "Column not found" });
-  }
-  const [removed] = columns.splice(index, 1);
-  boardColumnsStore[board.id] = columns.map((col, idx) => ({
-    ...col,
-    order: idx
-  }));
-  board.updatedAt = new Date().toISOString();
-  return res.json({ success: true, removedId: removed.id });
-});
+boardsRouter.delete("/:id/columns/:columnId", async (req, res) => {
+  const boardId = req.params.id;
+  const columnId = req.params.columnId;
 
-boardsRouter.patch("/:id/columns/:columnId/tasks/:taskId", (req, res) => {
-  const board = boardsStore.find((b) => b.id === req.params.id);
-  if (!board) {
-    return res.status(404).json({ error: "Board not found" });
-  }
-  const columns = boardColumnsStore[board.id] ?? [];
-  const column = columns.find((c) => c.id === req.params.columnId);
+  const column = await prisma.boardColumn.findFirst({
+    where: { id: columnId, boardId }
+  });
   if (!column) {
     return res.status(404).json({ error: "Column not found" });
   }
-  const task = column.tasks.find((t) => t.id === req.params.taskId);
-  if (!task) {
-    return res.status(404).json({ error: "Task not found" });
-  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.boardColumn.delete({ where: { id: columnId } });
+    const remaining = await tx.boardColumn.findMany({
+      where: { boardId },
+      orderBy: { order: "asc" }
+    });
+    await Promise.all(
+      remaining.map((col, idx) =>
+        tx.boardColumn.update({
+          where: { id: col.id },
+          data: { order: idx }
+        })
+      )
+    );
+    await tx.board.update({ where: { id: boardId }, data: { updatedAt: new Date() } });
+  });
+
+  return res.json({ success: true, removedId: columnId });
+});
+
+boardsRouter.patch("/:id/columns/:columnId/tasks/:taskId", async (req, res) => {
+  const boardId = req.params.id;
+  const columnId = req.params.columnId;
+  const taskId = req.params.taskId;
 
   const parsed = updateTaskSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -244,11 +241,47 @@ boardsRouter.patch("/:id/columns/:columnId/tasks/:taskId", (req, res) => {
     });
   }
 
-  const updates = parsed.data;
-  task.title = updates.title?.trim() || task.title;
-  task.description = updates.description ?? task.description;
-  task.coverColor = updates.coverColor ?? task.coverColor;
-  board.updatedAt = new Date().toISOString();
+  const task = await prisma.boardTask.findFirst({
+    where: { id: taskId, boardId, columnId }
+  });
+  if (!task) {
+    return res.status(404).json({ error: "Task not found" });
+  }
 
-  return res.json(task);
+  const updates = parsed.data;
+  const updated = await prisma.boardTask.update({
+    where: { id: taskId },
+    data: {
+      title: updates.title ? updates.title.trim() : undefined,
+      description: updates.description ?? undefined,
+      coverColor: updates.coverColor ?? undefined
+    }
+  });
+  await touchBoard(boardId);
+
+  return res.json(updated);
 });
+
+const boardTypeMap: Record<PrismaBoardType, BoardResponse["type"]> = {
+  TEAM: "team",
+  PERSONAL: "personal",
+  SPRINT: "sprint",
+  BACKLOG: "backlog"
+};
+
+function toBoardResponse(board: BoardWithCount): BoardResponse {
+  return {
+    id: board.id,
+    name: board.name,
+    description: board.description ?? "",
+    status: board.status,
+    tasks: board._count.tasks,
+    type: boardTypeMap[board.type],
+    updatedAt: board.updatedAt.toISOString(),
+    backgroundUrl: board.backgroundUrl
+  };
+}
+
+async function touchBoard(boardId: string) {
+  await prisma.board.update({ where: { id: boardId }, data: { updatedAt: new Date() } });
+}

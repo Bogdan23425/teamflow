@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { FiGrid, FiHome, FiUsers, FiSettings } from "react-icons/fi";
 import { cn } from "@/shared/utils/cn";
 
 const navItems = [
-  { to: "/app", label: "Обзор" },     
-  { to: "/boards", label: "Доски" },
-  { to: "/team", label: "Команда" },
-  { to: "/settings", label: "Настройки" }
+  { to: "/app", label: "Обзор", icon: FiHome },
+  { to: "/boards", label: "Доски", icon: FiGrid },
+  { to: "/team", label: "Команда", icon: FiUsers },
+  { to: "/settings", label: "Настройки", icon: FiSettings }
 ];
 
 
@@ -33,100 +34,104 @@ const ToggleIcon: React.FC<{ collapsed: boolean }> = ({ collapsed }) => (
   </svg>
 );
 
+const COLLAPSED_WIDTH = 88;
+const EXPANDED_WIDTH = 280;
+
 export const Sidebar: React.FC = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    const stored = window.localStorage.getItem("tf-sidebar-collapsed");
+    return stored === "true";
+  });
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const toggleCollapsed = () => setIsCollapsed((prev) => !prev);
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("tf-sidebar-collapsed", String(isCollapsed));
+    }
+  }, [isCollapsed]);
 
   const renderContent = (variant: "desktop" | "mobile") => (
     <div className="relative flex h-full flex-col">
-      <div className="flex items-center gap-2 px-5 py-4 border-b border-border/70">
-        <div className="h-8 w-8 rounded-xl bg-primary/12 flex items-center justify-center">
-          <span className="text-sm font-semibold text-primary">TF</span>
-        </div>
-        {!isCollapsed && (
-          <div className="flex flex-col overflow-hidden">
-            <span className="text-sm font-semibold leading-none truncate">
-              TeamFlow
-            </span>
-            <span className="mt-1 text-[11px] uppercase tracking-[0.16em] text-text-muted">
-              Workspace
-            </span>
-          </div>
-        )}
-      </div>
-
-      <nav className="flex-1 px-2.5 py-3 space-y-1">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-2 rounded-2xl px-2.5 py-2 text-sm transition-all duration-180",
-                "text-text-muted hover:text-foreground hover:bg-primary/6",
-                isActive &&
-                  "bg-primary/12 text-foreground font-medium shadow-[0_0_0_1px_rgba(255,255,255,0.02)]",
-                isCollapsed && "justify-center"
-              )
-            }
-          >
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-surface-variant text-[11px] text-text-muted/80">
-              {item.label.slice(0, 1)}
-            </span>
-            {!isCollapsed && (
-              <AnimatePresence initial={false}>
-                <motion.span
-                  key="label"
-                  initial={{ opacity: 0, x: -4 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -4 }}
-                  transition={{ duration: 0.16, ease: [0.33, 1, 0.68, 1] }}
-                  className="truncate"
-                >
-                  {item.label}
-                </motion.span>
-              </AnimatePresence>
-            )}
-          </NavLink>
-        ))}
-      </nav>
-
-      <div className="px-3 pb-3 pt-2 border-t border-border/70">
-        <div className="flex items-center justify-between gap-2 rounded-2xl bg-surface-variant px-3 py-3">
-          <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-full bg-gradient-to-tr from-primary/85 to-primary/55 flex items-center justify-center text-[11px] font-semibold text-primary-foreground">
-              Б
-            </div>
-            {!isCollapsed && (
-              <div className="flex flex-col">
-                <span className="text-xs font-medium leading-tight">
-                  Текущая команда
+      <div className="px-3 pt-4 pb-3">
+        <div className="flex items-center gap-3">
+          {!isCollapsed && (
+            <div className="flex items-center gap-2">
+              <div className="relative h-9 w-9 rounded-2xl bg-primary/14 text-primary flex items-center justify-center font-semibold shadow-[0_10px_24px_rgba(37,99,235,0.18)]">
+                TF
+                <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-primary" />
+              </div>
+              <div className="flex flex-col overflow-hidden">
+                <span className="text-sm font-semibold leading-tight truncate">
+                  TeamFlow
                 </span>
-                <span className="text-[11px] text-text-muted mt-0.5">
-                  Название команды
+                <span className="text-[11px] uppercase tracking-[0.16em] text-text-muted">
+                  Workspace
                 </span>
               </div>
-            )}
-          </div>
-          {!isCollapsed && (
-            <span className="text-[11px] text-text-muted">
-              Сменить
-            </span>
+            </div>
+          )}
+          {variant === "desktop" && (
+            <button
+              type="button"
+              onClick={toggleCollapsed}
+              className="ml-auto flex h-9 w-9 items-center justify-center rounded-xl bg-surface-variant border border-border text-text-muted hover:text-foreground hover:bg-surface transition-all duration-160 active:scale-95 shadow-soft/30"
+            >
+              <ToggleIcon collapsed={isCollapsed} />
+            </button>
           )}
         </div>
       </div>
 
-      {variant === "desktop" && (
-        <button
-          type="button"
-          onClick={toggleCollapsed}
-          className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-lg bg-surface-variant border border-border/70 text-text-muted hover:text-foreground hover:bg-surface transition-all duration-160 active:scale-95"
-        >
-          <ToggleIcon collapsed={isCollapsed} />
-        </button>
-      )}
+      <nav className="flex-1 px-2.5 py-3 space-y-1">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                cn(
+                  "group relative flex items-center gap-2 rounded-2xl px-2.5 py-2 text-sm transition-all duration-200",
+                  "text-text-muted hover:text-foreground",
+                  isCollapsed && "justify-center",
+                  isActive && "text-text font-medium"
+                )
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <motion.span
+                      layoutId="sidebar-active"
+                      className="absolute inset-0 rounded-2xl bg-primary/10 shadow-[0_10px_22px_rgba(37,99,235,0.12),0_0_0_1px_rgba(37,99,235,0.16)]"
+                      transition={{ duration: 0.22, ease: [0.25, 0.8, 0.35, 1] }}
+                    />
+                  )}
+                  <span className="relative inline-flex h-9 w-9 items-center justify-center rounded-xl bg-surface-variant text-[13px] text-primary group-hover:scale-[1.03] transition-transform duration-150">
+                    <Icon className="h-[18px] w-[18px]" />
+                  </span>
+                  {!isCollapsed && (
+                    <AnimatePresence initial={false}>
+                      <motion.span
+                        key="label"
+                        initial={{ opacity: 0, x: -4 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -4 }}
+                        transition={{ duration: 0.16, ease: [0.33, 1, 0.68, 1] }}
+                        className="relative truncate"
+                      >
+                        {item.label}
+                      </motion.span>
+                    </AnimatePresence>
+                  )}
+                </>
+              )}
+            </NavLink>
+          );
+        })}
+      </nav>
 
       {variant === "mobile" && (
         <button
@@ -188,14 +193,17 @@ export const Sidebar: React.FC = () => {
         className="hidden md:flex flex-shrink-0"
         initial={false}
         animate={{
-            width: isCollapsed ? 88 : 280,
+            width: isCollapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH,
         }}
         transition={{ duration: 0.24, ease: [0.22, 0.61, 0.36, 1] }}
         >
-        <div className="my-4 mr-4 h-[calc(100vh-2rem)]">
-            <div className="relative h-full bg-surface shadow-soft rounded-r-3xl rounded-l-none border border-border overflow-hidden">
+        <div
+          className="h-[calc(100vh-2rem)]"
+          style={{ width: isCollapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH }}
+        >
+          <div className="relative h-full w-full bg-surface shadow-soft rounded-3xl border border-border overflow-hidden">
             {renderContent("desktop")}
-            </div>
+          </div>
         </div>
         </motion.aside>
     </>

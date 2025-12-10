@@ -28,14 +28,14 @@ export const BoardsControls: React.FC<BoardsControlsProps> = ({
           Список всех досок. Переключай вид или используй поиск.
         </p>
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="inline-flex items-center rounded-full bg-surface border border-border p-1 text-[11px] md:text-xs">
+          <div className="inline-flex items-center rounded-full bg-surface border border-border p-1 text-[11px] md:text-xs shadow-soft/30">
             <button
               type="button"
               onClick={() => onViewChange("grid")}
               className={[
                 "px-3 py-1.5 rounded-full transition-all duration-150",
                 view === "grid"
-                  ? "bg-bg text-text shadow-soft"
+                  ? "bg-primary text-white shadow-soft"
                   : "text-text-muted hover:text-text",
               ].join(" ")}
             >
@@ -47,7 +47,7 @@ export const BoardsControls: React.FC<BoardsControlsProps> = ({
               className={[
                 "px-3 py-1.5 rounded-full transition-all duration-150",
                 view === "list"
-                  ? "bg-bg text-text shadow-soft"
+                  ? "bg-primary text-white shadow-soft"
                   : "text-text-muted hover:text-text",
               ].join(" ")}
             >
@@ -61,7 +61,7 @@ export const BoardsControls: React.FC<BoardsControlsProps> = ({
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Поиск по названию или описанию…"
               type="text"
-              className="text-xs md:text-sm h-9 rounded-full border-border bg-surface"
+              className="text-xs md:text-sm h-10 rounded-full border-border bg-white/80 shadow-soft/30 backdrop-blur placeholder:text-text-muted focus-visible:ring-2 focus-visible:ring-primary/60"
             />
           </div>
         </div>

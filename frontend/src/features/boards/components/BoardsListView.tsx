@@ -35,7 +35,7 @@ export const BoardsListView: React.FC<BoardsListViewProps> = ({
         {boards.map((board) => (
           <div
             key={board.id}
-            className="w-full text-left px-4 py-3 md:py-3.5 flex flex-col gap-2 md:grid md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_40px] md:items-center md:gap-4"
+            className="w-full text-left px-4 py-3 md:py-3.5 flex flex-col gap-2 md:grid md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_40px] md:items-center md:gap-4 transition-colors duration-150 hover:bg-surface"
           >
             <button
               type="button"

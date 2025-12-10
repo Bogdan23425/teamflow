@@ -22,13 +22,17 @@ export const BoardActionsMenu: React.FC<BoardActionsMenuProps> = ({
       <button
         type="button"
         onClick={toggle}
-        className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-border bg-bg text-[14px] text-text-muted hover:text-text transition-colors"
+        aria-expanded={open}
+        className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-border bg-bg text-[14px] text-text-muted hover:text-text transition-all duration-150 hover:-translate-y-[1px] hover:shadow-soft/40"
       >
         ⋯
       </button>
 
       {open && (
-        <div className="absolute right-0 top-9 z-10 min-w-[140px] rounded-lg border border-border bg-surface shadow-soft p-1">
+        <div
+          className="absolute right-0 top-9 z-10 min-w-[160px] rounded-lg border border-border bg-surface shadow-soft p-1 origin-top-right animate-[tfFadeIn_140ms_ease-out]"
+          style={{ backdropFilter: "blur(10px)" }}
+        >
           <button
             type="button"
             onClick={handleDelete}

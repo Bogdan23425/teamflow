@@ -12,6 +12,7 @@ import {
 import { Board, BoardColumn, BoardTask } from "./types";
 import { ColumnActionsMenu } from "./components/ColumnActionsMenu";
 import { updateBoardTask } from "@/shared/api/boards";
+import { TaskModal } from "./components/TaskModal";
 
 export const BoardDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -34,8 +35,6 @@ export const BoardDetail: React.FC = () => {
     task: BoardTask;
     columnId: string;
   } | null>(null);
-  const [taskDesc, setTaskDesc] = React.useState("");
-  const [taskCover, setTaskCover] = React.useState("");
 
   React.useEffect(() => {
     if (!id) return;
@@ -102,18 +101,13 @@ export const BoardDetail: React.FC = () => {
 
   const handleOpenTask = (columnId: string, task: BoardTask) => {
     setSelectedTask({ task, columnId });
-    setTaskDesc(task.description ?? "");
-    setTaskCover(task.coverColor ?? "");
   };
 
-  const handleSaveTask = async () => {
+  const handleSaveTask = async (updates: { description?: string; coverColor?: string }) => {
     if (!id || !selectedTask) return;
     const { columnId, task } = selectedTask;
     try {
-      const updated = await updateBoardTask(id, columnId, task.id, {
-        description: taskDesc,
-        coverColor: taskCover,
-      });
+      const updated = await updateBoardTask(id, columnId, task.id, updates);
       setColumns((prev) =>
         prev.map((col) =>
           col.id === columnId
@@ -135,8 +129,6 @@ export const BoardDetail: React.FC = () => {
 
   const handleCloseTask = () => {
     setSelectedTask(null);
-    setTaskDesc("");
-    setTaskCover("");
   };
 
   const handleSaveBackground = async () => {
@@ -163,11 +155,19 @@ export const BoardDetail: React.FC = () => {
         transition={{ duration: 0.18 }}
       >
         <div className="flex flex-col h-full overflow-visible">
-          <div className="relative z-40 flex items-center justify-between gap-2 px-4 py-3 md:px-6 bg-surface/95 backdrop-blur border-b border-border">
-            <div className="flex flex-col">
-              <h1 className="text-xl md:text-2xl font-semibold tracking-tight text-text">
-                {board?.name ?? (loading ? "Загрузка…" : "Без имени")}
-              </h1>
+          <div className="relative z-40 flex items-center justify-between gap-3 px-4 py-3 md:px-6 bg-surface/90 backdrop-blur border-b border-border">
+            <div className="flex flex-col gap-1">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-text-muted">Доска</p>
+              <div className="flex items-center gap-3 flex-wrap">
+                <h1 className="text-xl md:text-2xl font-semibold tracking-tight text-text">
+                  {board?.name ?? (loading ? "Загрузка…" : "Без имени")}
+                </h1>
+                {board?.status && (
+                  <span className="inline-flex items-center rounded-full border border-border px-2.5 py-1 text-[11px] uppercase tracking-[0.12em] text-text-muted bg-bg">
+                    {board.status}
+                  </span>
+                )}
+              </div>
               <p className="text-sm text-text-muted max-w-3xl">
                 {board?.description || "Без описания"}
               </p>
@@ -177,7 +177,7 @@ export const BoardDetail: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setBgMenuOpen((p) => !p)}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-bg text-sm text-text hover:bg-surface transition-colors"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-card text-sm text-text hover:bg-surface transition-colors shadow-soft/30"
                 >
                   ⚙
                 </button>
@@ -215,7 +215,7 @@ export const BoardDetail: React.FC = () => {
               <button
                 type="button"
                 onClick={handleClose}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-bg text-sm text-text hover:bg-surface transition-colors"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-card text-sm text-text hover:bg-surface transition-colors shadow-soft/30"
               >
                 ✕
               </button>
@@ -254,17 +254,31 @@ export const BoardDetail: React.FC = () => {
                   </div>
 
                   <div className="relative flex-1 min-h-[320px]">
-                    <div className="flex items-start gap-3 overflow-x-auto overflow-y-hidden pb-4 h-[calc(100vh-220px)]">
+                    {!board?.backgroundUrl && (
+                      <div
+                        className="pointer-events-none absolute inset-0"
+                        style={{
+                          backgroundImage:
+                            "radial-gradient(circle at 18% 22%, rgba(37,99,235,0.22), transparent 45%), radial-gradient(circle at 78% 18%, rgba(99,102,241,0.16), transparent 42%), radial-gradient(circle at 52% 78%, rgba(37,99,235,0.16), transparent 40%)",
+                          filter: "blur(28px)",
+                          opacity: 0.9
+                        }}
+                      />
+                    )}
+                    <div className="relative flex items-start gap-3 overflow-x-auto overflow-y-hidden pb-4 h-[calc(100vh-220px)] px-1">
                       {columnsLoading && (
-                        <div className="min-w-[240px] rounded-xl border border-border bg-surface px-4 py-6 text-center text-sm text-text-muted">
+                        <div className="min-w-[240px] rounded-xl border border-transparent bg-card px-4 py-6 text-center text-sm text-text-muted shadow-soft/30">
                           Загрузка колонок…
                         </div>
                       )}
 
                       {columns.map((col) => (
-                        <div
+                        <motion.div
                           key={col.id}
-                          className="min-w-[272px] max-w-[272px] rounded-xl border border-border bg-surface px-4 py-3 flex flex-col gap-3"
+                          initial={{ opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
+                          className="min-w-[272px] max-w-[272px] rounded-2xl border border-transparent bg-card px-4 py-3 flex flex-col gap-3 shadow-[0_16px_45px_rgba(15,23,42,0.22)]"
                         >
                           <div className="flex items-center justify-between gap-2">
                             <span className="text-sm font-semibold text-text">
@@ -289,8 +303,13 @@ export const BoardDetail: React.FC = () => {
                               return (
                               <div
                                 key={taskKey}
-                                className="w-full rounded-md border border-border bg-card text-xs text-text shadow-soft/30 break-words overflow-hidden"
-                                style={{ minHeight: 64, maxWidth: "100%" }}
+                                className="w-full rounded-xl border text-xs text-text shadow-[0_12px_30px_rgba(15,23,42,0.2)] break-words overflow-hidden hover:border-primary/60 hover:shadow-strong/30 transition-all duration-150"
+                                style={{
+                                  minHeight: 78,
+                                  maxWidth: "100%",
+                                  backgroundColor: "var(--color-bg)",
+                                  borderColor: "rgba(37, 99, 235, 0.32)"
+                                }}
                                 onClick={() => handleOpenTask(col.id, task)}
                                 role="button"
                                 tabIndex={0}
@@ -369,11 +388,11 @@ export const BoardDetail: React.FC = () => {
                               </div>
                             )}
                           </div>
-                        </div>
+                        </motion.div>
                       ))}
 
                       {isAddingColumn ? (
-                        <div className="min-w-[272px] max-w-[272px] rounded-xl border border-border bg-surface px-4 py-3 flex flex-col gap-2">
+                        <div className="min-w-[272px] max-w-[272px] rounded-2xl border border-border bg-card/90 backdrop-blur px-4 py-3 flex flex-col gap-2 shadow-soft/30">
                           <div className="flex items-center justify-between gap-2">
                             <span className="text-sm font-semibold text-text">
                               Новая колонка
@@ -409,7 +428,7 @@ export const BoardDetail: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setIsAddingColumn(true)}
-                            className="min-w-[272px] h-11 rounded-md border border-border bg-primary text-white text-sm font-medium hover:shadow-soft active:scale-[0.98] transition-[transform,box-shadow,background-color] duration-150"
+                            className="min-w-[272px] h-11 rounded-xl border border-border bg-primary text-white text-sm font-medium hover:shadow-soft active:scale-[0.98] transition-[transform,box-shadow,background-color] duration-150"
                           >
                             Создать колонку
                           </button>
@@ -425,99 +444,11 @@ export const BoardDetail: React.FC = () => {
       </motion.div>
 
       {/* Task modal */}
-      <AnimatePresence>
-        {selectedTask && (
-          <motion.div
-            key={`task-modal-${selectedTask.task.id}`}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="w-full max-w-2xl rounded-2xl border border-border bg-surface shadow-soft p-6 flex flex-col gap-4 relative"
-              initial={{ opacity: 0, y: 12, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 8, scale: 0.98 }}
-              transition={{ duration: 0.18, ease: "easeOut" }}
-            >
-              <button
-                type="button"
-                onClick={handleCloseTask}
-                className="absolute right-4 top-4 h-9 w-9 rounded-full border border-border bg-bg text-text text-sm hover:bg-surface transition-colors"
-              >
-                ✕
-              </button>
-
-              <div
-                className="h-24 w-full rounded-xl border border-border"
-                style={{
-                  backgroundColor: taskCover || "var(--color-card)",
-                }}
-              />
-
-              <div className="space-y-1">
-                <p className="text-xs text-text-muted uppercase tracking-[0.18em]">
-                  Карточка
-                </p>
-                <h2 className="text-lg font-semibold text-text">
-                  {selectedTask.task.title}
-                </h2>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-[1.2fr,0.8fr]">
-                <div className="space-y-2">
-                  <label className="text-xs text-text-muted">
-                    Описание
-                    <textarea
-                      value={taskDesc}
-                      onChange={(e) => setTaskDesc(e.target.value)}
-                      placeholder="Добавьте подробности по задаче..."
-                      rows={5}
-                      className="mt-1 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 resize-none"
-                    />
-                  </label>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="space-y-1">
-                    <label className="text-xs text-text-muted">
-                      Цвет обложки
-                    </label>
-                    <input
-                      type="color"
-                      value={taskCover || "#6d8fd1"}
-                      onChange={(e) => setTaskCover(e.target.value)}
-                      className="h-10 w-full rounded-md border border-border bg-card"
-                    />
-                  </div>
-                  <div className="space-y-1 text-xs text-text-muted">
-                    <div>Создал: не задано</div>
-                    <div>Обновил: не задано</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={handleCloseTask}
-                  className="h-10 rounded-md border border-border px-4 text-sm text-text-muted hover:text-text hover:bg-surface"
-                >
-                  Закрыть
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveTask}
-                  className="h-10 rounded-md border border-border bg-card px-5 text-sm font-medium text-text hover:shadow-soft active:scale-[0.98] transition-[transform,box-shadow,background-color] duration-150"
-                >
-                  Сохранить
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <TaskModal
+        task={selectedTask?.task || null}
+        onClose={handleCloseTask}
+        onSave={handleSaveTask}
+      />
     </AnimatePresence>
   );
 };
