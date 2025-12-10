@@ -162,11 +162,6 @@ export const BoardDetail: React.FC = () => {
                 <h1 className="text-xl md:text-2xl font-semibold tracking-tight text-text">
                   {board?.name ?? (loading ? "Загрузка…" : "Без имени")}
                 </h1>
-                {board?.status && (
-                  <span className="inline-flex items-center rounded-full border border-border px-2.5 py-1 text-[11px] uppercase tracking-[0.12em] text-text-muted bg-bg">
-                    {board.status}
-                  </span>
-                )}
               </div>
               <p className="text-sm text-text-muted max-w-3xl">
                 {board?.description || "Без описания"}

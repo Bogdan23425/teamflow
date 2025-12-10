@@ -1,7 +1,10 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { CreateBoardModal } from "@/features/boards/components/CreateBoardModal";
-import { createBoard, fetchBoards } from "@/shared/api/boards";
+import { DeleteBoardModal } from "@/features/boards/components/DeleteBoardModal";
+import { BoardsGridView } from "@/features/boards/components/BoardsGridView";
+import { createBoard, deleteBoard, fetchBoards } from "@/shared/api/boards";
 import { Board } from "@/features/boards/types";
 import { getBoardsCache, setBoardsCache } from "@/shared/store/boardsCache";
 
@@ -58,13 +61,12 @@ const teamLoad = [
   },
 ];
 
-type BoardFilter = "all" | "focus" | "team";
-
 export const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [isCreateOpen, setIsCreateOpen] = React.useState(false);
-  const [boardFilter, setBoardFilter] = React.useState<BoardFilter>("all");
   const [boardCards, setBoardCards] = React.useState<BoardCard[]>([]);
   const [isBoardsLoading, setIsBoardsLoading] = React.useState(false);
+  const [deleteTarget, setDeleteTarget] = React.useState<Board | null>(null);
   const hasFetchedOnceRef = React.useRef(false);
 
   React.useEffect(() => {
@@ -77,7 +79,7 @@ export const Dashboard: React.FC = () => {
         setBoardCards(
           cached.map((board) => ({
             ...board,
-            badge: board.status || "Доска",
+            badge: "Доска",
             progress: board.progress ?? 0,
           }))
         );
@@ -89,7 +91,7 @@ export const Dashboard: React.FC = () => {
         const data = await fetchBoards();
         const mapped = data.map((board) => ({
           ...board,
-          badge: board.status || "Доска",
+          badge: "Доска",
           progress: board.progress ?? 0,
         }));
         setBoardCards(mapped);
@@ -102,15 +104,7 @@ export const Dashboard: React.FC = () => {
     loadBoards();
   }, []);
 
-  const filteredBoards = React.useMemo(() => {
-    if (boardFilter === "all") return boardCards;
-    if (boardFilter === "focus") {
-      return boardCards.filter(
-        (b) => b.type === "personal" || b.type === "sprint"
-      );
-    }
-    return boardCards.filter((b) => b.type === "team");
-  }, [boardFilter, boardCards]);
+  const filteredBoards = boardCards;
 
   const handleOpenCreate = () => setIsCreateOpen(true);
   const handleCloseCreate = () => setIsCreateOpen(false);
@@ -122,7 +116,7 @@ export const Dashboard: React.FC = () => {
       const created = await createBoard(payload);
       const mapped: BoardCard = {
         ...created,
-        badge: created.status || "Новая",
+        badge: "Новая",
         progress: created.progress ?? 0,
       };
       setBoardCards((prev) => {
@@ -133,6 +127,31 @@ export const Dashboard: React.FC = () => {
     };
 
     run().finally(handleCloseCreate);
+  };
+
+  const handleOpenBoard = (id: string) => navigate(`/boards/${id}`);
+
+  const handleRequestDelete = (board: Board) => setDeleteTarget(board);
+  const handleCloseDelete = () => setDeleteTarget(null);
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) return;
+    const id = deleteTarget.id;
+    setDeleteTarget(null);
+
+    setBoardCards((prev) => {
+      const next = prev.filter((b) => b.id !== id);
+      setBoardsCache(next);
+      return next;
+    });
+
+    const run = async () => {
+      try {
+        await deleteBoard(id);
+      } catch {
+        // ignore
+      }
+    };
+    run();
   };
 
   return (
@@ -167,9 +186,6 @@ export const Dashboard: React.FC = () => {
               </span>
               Новая доска
             </button>
-            <button className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-4 py-2 text-xs md:text-sm text-text-muted hover:text-text hover:bg-surface transition-colors duration-150">
-              Быстрый старт
-            </button>
           </div>
         </motion.header>
 
@@ -179,106 +195,17 @@ export const Dashboard: React.FC = () => {
           transition={{ duration: 0.3, ease: "easeOut" }}
           className="flex flex-col gap-3"
         >
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-surface border border-border px-1.5 py-1 w-fit">
-            <button
-              type="button"
-              onClick={() => setBoardFilter("all")}
-              className={[
-                "px-3 py-1.5 rounded-full text-[11px] md:text-xs transition-all duration-150",
-                boardFilter === "all"
-                  ? "bg-primary text-white shadow-soft"
-                  : "text-text-muted hover:text-text hover:bg-bg",
-              ].join(" ")}
-            >
-              Все доски
-            </button>
-            <button
-              type="button"
-              onClick={() => setBoardFilter("focus")}
-              className={[
-                "px-3 py-1.5 rounded-full text-[11px] md:text-xs transition-all duration-150",
-                boardFilter === "focus"
-                  ? "bg-primary text-white shadow-soft"
-                  : "text-text-muted hover:text-text hover:bg-bg",
-              ].join(" ")}
-            >
-              Фокус
-            </button>
-            <button
-              type="button"
-              onClick={() => setBoardFilter("team")}
-              className={[
-                "px-3 py-1.5 rounded-full text-[11px] md:text-xs transition-all duration-150",
-                boardFilter === "team"
-                  ? "bg-primary text-white shadow-soft"
-                  : "text-text-muted hover:text-text hover:bg-bg",
-              ].join(" ")}
-            >
-              Команда
-            </button>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {isBoardsLoading && filteredBoards.length === 0 ? (
-              <div className="col-span-full rounded-lg-tf border border-border bg-surface p-4 text-sm text-text-muted">
-                Загружаем доски…
-              </div>
-            ) : (
-              filteredBoards.map((board, index) => (
-              <motion.button
-                key={board.id}
-                type="button"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.35,
-                  delay: 0.05 * index,
-                  ease: "easeOut",
-                }}
-                whileHover={{
-                  y: -4,
-                  scale: 1.02,
-                  transition: { duration: 0.18 },
-                }}
-                whileTap={{ scale: 0.98 }}
-                className="group relative flex flex-col items-stretch rounded-lg-tf border border-border bg-surface p-4 md:p-5 text-left shadow-soft overflow-hidden"
-              >
-                <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <div className="absolute inset-x-[-10%] top-0 h-16 bg-primary-soft" />
-                </div>
-
-                <div className="relative flex items-center justify-between gap-2 mb-3">
-                  <span className="inline-flex items-center rounded-full border border-border px-2.5 py-1 text-[11px] uppercase tracking-[0.16em] text-text-muted bg-bg">
-                    {board.badge ?? "Доска"}
-                  </span>
-                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-bg text-[10px] text-text-muted group-hover:text-primary transition-colors duration-200">
-                    →
-                  </span>
-                </div>
-
-                <h2 className="relative text-sm md:text-base font-semibold mb-1.5 text-text group-hover:text-primary transition-colors duration-200">
-                  {board.name}
-                </h2>
-                <p className="relative text-xs text-text-muted leading-relaxed">
-                  {board.description}
-                </p>
-
-                <div className="relative mt-4 flex items-center justify-between text-[11px] text-text-muted">
-                  <span>{board.tasks} задач</span>
-                  <span className="inline-flex items-center gap-2">
-                    <span>Прогресс</span>
-                    <span className="h-1 w-10 overflow-hidden rounded-full bg-bg">
-                      <span
-                        className="block h-full rounded-full bg-primary"
-                        style={{ width: `${(board.progress ?? 0) * 100}%` }}
-                      />
-                    </span>
-                  </span>
-                </div>
-              </motion.button>
-              ))
-            )}
-          </div>
+          {isBoardsLoading && filteredBoards.length === 0 ? (
+            <div className="rounded-lg-tf border border-border bg-surface p-4 text-sm text-text-muted">
+              Загружаем доски…
+            </div>
+          ) : (
+            <BoardsGridView
+              boards={filteredBoards}
+              onOpenBoard={handleOpenBoard}
+              onDeleteBoard={handleRequestDelete}
+            />
+          )}
         </motion.section>
 
         <section className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -381,6 +308,13 @@ export const Dashboard: React.FC = () => {
         isOpen={isCreateOpen}
         onClose={handleCloseCreate}
         onCreate={handleCreateBoard}
+      />
+
+      <DeleteBoardModal
+        isOpen={!!deleteTarget}
+        boardName={deleteTarget?.name}
+        onCancel={handleCloseDelete}
+        onConfirm={handleConfirmDelete}
       />
     </main>
   );

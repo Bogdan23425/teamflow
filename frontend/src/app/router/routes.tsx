@@ -7,6 +7,8 @@ import { DashboardPage } from "@/pages/private/DashboardPage";
 import { BoardsPage } from "@/pages/private/BoardsPage";
 import { TeamPage } from "@/pages/private/TeamPage";
 import { BoardDetailPage } from "@/pages/private/BoardDetailPage";
+import { ProfilePage } from "@/pages/private/ProfilePage";
+import { SettingsPage } from "@/pages/private/SettingsPage";
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -19,6 +21,8 @@ export const AppRoutes: React.FC = () => {
       <Route path="/boards" element={<BoardsPage />} />
       <Route path="/boards/:id" element={<BoardDetailPage />} />
       <Route path="/team" element={<TeamPage />} />
+      <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/settings" element={<SettingsPage />} />
     </Routes>
   );
 };

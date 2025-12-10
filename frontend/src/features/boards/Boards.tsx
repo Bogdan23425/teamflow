@@ -2,14 +2,14 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 
-import { Board, BoardsViewMode } from "./types";
+import { Board } from "./types";
 
 import { BoardsHeader } from "./components/BoardsHeader";
 import { BoardsControls } from "./components/BoardsControls";
 import { BoardsGridView } from "./components/BoardsGridView";
-import { BoardsListView } from "./components/BoardsListView";
 import { BoardsEmptyState } from "./components/BoardsEmptyState";
 import { CreateBoardModal } from "./components/CreateBoardModal";
+import { DeleteBoardModal } from "./components/DeleteBoardModal";
 import { createBoard, deleteBoard, fetchBoards } from "@/shared/api/boards";
 import { getBoardsCache, setBoardsCache } from "@/shared/store/boardsCache";
 
@@ -17,9 +17,9 @@ export const Boards: React.FC = () => {
   const navigate = useNavigate();
 
   const [boards, setBoards] = React.useState<Board[]>([]);
-  const [view, setView] = React.useState<BoardsViewMode>("list");
   const [search, setSearch] = React.useState("");
   const [isCreateOpen, setIsCreateOpen] = React.useState(false);
+  const [deleteTarget, setDeleteTarget] = React.useState<Board | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const hasFetchedOnceRef = React.useRef(false);
 
@@ -93,16 +93,23 @@ export const Boards: React.FC = () => {
     run();
   };
 
+  const handleRequestDelete = (board: Board) => setDeleteTarget(board);
+  const handleCloseDelete = () => setDeleteTarget(null);
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) return;
+    const id = deleteTarget.id;
+    setDeleteTarget(null);
+    handleDeleteBoard(id);
+  };
+
   const hasBoards = filteredBoards.length > 0;
 
   return (
     <main className="flex-1">
-      <div className="w-full px-4 md:px-6 lg:px-8 py-6 md:py-10 flex flex-col gap-6 md:gap-8">
+      <div className="w-full px-4 md:px-6 lg:px-8 py-0 md:py-2 flex flex-col gap-3 md:gap-5">
         <BoardsHeader onCreateClick={handleOpenCreate} />
 
         <BoardsControls
-          view={view}
-          onViewChange={setView}
           search={search}
           onSearchChange={setSearch}
         />
@@ -113,19 +120,11 @@ export const Boards: React.FC = () => {
               Загружаем доски…
             </div>
           ) : hasBoards ? (
-            view === "grid" ? (
-              <BoardsGridView
-                boards={filteredBoards}
-                onOpenBoard={handleOpenBoard}
-                onDeleteBoard={handleDeleteBoard}
-              />
-            ) : (
-              <BoardsListView
-                boards={filteredBoards}
-                onOpenBoard={handleOpenBoard}
-                onDeleteBoard={handleDeleteBoard}
-              />
-            )
+            <BoardsGridView
+              boards={filteredBoards}
+              onOpenBoard={handleOpenBoard}
+              onDeleteBoard={handleRequestDelete}
+            />
           ) : (
             <BoardsEmptyState onCreateClick={handleOpenCreate} />
           )}
@@ -135,6 +134,13 @@ export const Boards: React.FC = () => {
           isOpen={isCreateOpen}
           onClose={handleCloseCreate}
           onCreate={handleCreateBoard}
+        />
+
+        <DeleteBoardModal
+          isOpen={!!deleteTarget}
+          boardName={deleteTarget?.name}
+          onCancel={handleCloseDelete}
+          onConfirm={handleConfirmDelete}
         />
       </div>
     </main>

@@ -1,5 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { FiTrash2 } from "react-icons/fi";
+import { Button } from "@/shared/ui/Button";
 
 const teams = [
   {
@@ -54,12 +56,9 @@ export const TeamManagement: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 mt-1 md:mt-0">
-            <button className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs md:text-sm font-medium text-white shadow-soft hover:shadow-strong active:scale-[0.97] transition-[transform,box-shadow,background-color] duration-150">
-              <span className="h-5 w-5 rounded-full bg-primary-soft flex items-center justify-center text-[13px] text-text">
-                +
-              </span>
+            <Button variant="primary" size="md" className="rounded-full px-5">
               Новая команда
-            </button>
+            </Button>
           </div>
         </motion.header>
 
@@ -68,48 +67,47 @@ export const TeamManagement: React.FC = () => {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="rounded-lg-tf border border-border bg-surface p-4 md:p-5 shadow-soft flex flex-col gap-4"
+            className="rounded-2xl border border-border bg-card shadow-soft flex flex-col"
           >
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-sm font-semibold text-text">Мои команды</h2>
-              <button className="text-[11px] text-text-muted hover:text-text transition-colors">
+            <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-border/70">
+              <div>
+                <h2 className="text-sm font-semibold text-text">Мои команды</h2>
+                <p className="text-xs text-text-muted">Список доступных рабочих групп</p>
+              </div>
+              <Button variant="secondary" size="sm" className="rounded-full">
                 Управление ролями
-              </button>
+              </Button>
             </div>
 
-            <div className="rounded-md-tf border border-border bg-bg overflow-hidden">
-              <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1.2fr)] px-3 py-2 text-[11px] text-text-muted">
+            <div className="overflow-hidden">
+              <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] px-5 py-3 text-[11px] uppercase tracking-[0.12em] text-text-muted bg-surface">
                 <span>Команда</span>
                 <span>Роль</span>
-                <span>Участники</span>
                 <span className="text-right">Действия</span>
               </div>
               <div className="divide-y divide-border/70">
                 {teams.map((team) => (
                   <div
                     key={team.id}
-                    className="grid grid-cols-[minmax(0,2fr)_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1.2fr)] px-3 py-2.5 text-xs items-center bg-surface"
+                    className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] px-5 py-3 text-xs items-center bg-card"
                   >
                     <div className="flex flex-col">
-                      <span className="font-medium text-text">
-                        {team.name}
-                      </span>
-                      <span className="text-[11px] text-text-muted">
-                        {team.boards} досок
-                      </span>
+                      <span className="font-medium text-text">{team.name}</span>
+                      <span className="text-[11px] text-text-muted">{team.boards} досок</span>
                     </div>
                     <span className="text-text-muted">{team.role}</span>
-                    <span className="text-text-muted">{team.members}</span>
                     <div className="flex justify-end gap-1.5">
-                      <button className="rounded-full border border-border px-2 py-1 text-[11px] text-text-muted hover:bg-bg">
-                        Открыть
-                      </button>
-                      <button className="rounded-full border border-border px-2 py-1 text-[11px] text-text-muted hover:bg-bg">
-                        Редактировать
-                      </button>
-                      <button className="rounded-full border border-danger px-2 py-1 text-[11px] text-danger hover:bg-danger/10">
-                        Удалить
-                      </button>
+                      <Button variant="secondary" size="sm" className="rounded-full h-9 px-4">
+                        Выбрать
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="rounded-full h-9 w-9 p-0 border-danger text-danger"
+                        aria-label="Удалить команду"
+                      >
+                        <FiTrash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -121,15 +119,15 @@ export const TeamManagement: React.FC = () => {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.32, ease: "easeOut" }}
-            className="rounded-lg-tf border border-border bg-surface p-4 md:p-5 shadow-soft flex flex-col gap-4"
+            className="rounded-2xl border border-border bg-card p-4 md:p-5 shadow-soft flex flex-col gap-4"
           >
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-sm font-semibold text-text">
                 Участники текущей команды
               </h2>
-              <button className="text-[11px] text-text-muted hover:text-text transition-colors">
+              <Button variant="secondary" size="sm" className="rounded-full h-9 px-4">
                 Добавить участника
-              </button>
+              </Button>
             </div>
 
             <div className="space-y-2.5">

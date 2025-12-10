@@ -1,11 +1,11 @@
 import React from "react";
 import { PrivateLayout } from "@/shared/layouts/PrivateLayout";
-import { TeamManagement } from "@/features/team/TeamManagement";
+import { Settings } from "@/features/settings/Settings";
 
-export const TeamPage: React.FC = () => {
+export const SettingsPage: React.FC = () => {
   return (
     <PrivateLayout>
-      <TeamManagement />
+      <Settings />
     </PrivateLayout>
   );
 };
