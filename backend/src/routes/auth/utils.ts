@@ -1,11 +1,23 @@
 import { Response } from "express";
+import { UserRole } from "@prisma/client";
 import { env } from "../../config/env.js";
 import { signAccessToken, signRefreshToken } from "../../lib/jwt.js";
 
-type UserShape = { id: string; email: string; provider: string; name: string | null };
+type UserShape = {
+  id: string;
+  email: string;
+  provider: string;
+  name: string | null;
+  role: UserRole;
+};
 
 export function sendAuthResponse(res: Response, user: UserShape) {
-  const payload = { sub: user.id, email: user.email, provider: user.provider };
+  const payload = {
+    sub: user.id,
+    email: user.email,
+    provider: user.provider,
+    role: user.role
+  };
   const accessToken = signAccessToken(payload);
   const refreshToken = signRefreshToken(payload);
 
@@ -16,13 +28,19 @@ export function sendAuthResponse(res: Response, user: UserShape) {
       id: user.id,
       email: user.email,
       provider: user.provider,
-      name: user.name
+      name: user.name,
+      role: user.role
     }
   });
 }
 
 export function sendAuthRedirect(res: Response, user: UserShape) {
-  const payload = { sub: user.id, email: user.email, provider: user.provider };
+  const payload = {
+    sub: user.id,
+    email: user.email,
+    provider: user.provider,
+    role: user.role
+  };
   const accessToken = signAccessToken(payload);
   const refreshToken = signRefreshToken(payload);
 

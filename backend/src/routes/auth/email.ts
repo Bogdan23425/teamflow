@@ -1,15 +1,17 @@
 import { Router, type Response } from "express";
 import { z } from "zod";
+import { UserRole } from "@prisma/client";
 import { prisma } from "../../lib/prisma.js";
 import { hashPassword, verifyPassword } from "../../lib/password.js";
-import { verifyRefreshToken } from "../../lib/jwt.js";
+import { verifyAccessToken, verifyRefreshToken } from "../../lib/jwt.js";
 import { env } from "../../config/env.js";
 import { clearCookieOptions, cookieOptions, sendAuthResponse } from "./utils.js";
 
 const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
-  name: z.string().min(1).optional()
+  name: z.string().min(1).optional(),
+  role: z.nativeEnum(UserRole).optional()
 });
 
 const loginSchema = z.object({
@@ -24,7 +26,7 @@ emailRouter.post("/register", async (req, res) => {
   if (!parse.success) {
     return res.status(400).json({ error: parse.error.flatten() });
   }
-  const { email, password, name } = parse.data;
+  const { email, password, name, role } = parse.data;
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -37,7 +39,8 @@ emailRouter.post("/register", async (req, res) => {
       email,
       name,
       passwordHash,
-      provider: "LOCAL"
+      provider: "LOCAL",
+      role: role ?? "CANDIDATE"
     }
   });
 
@@ -84,4 +87,36 @@ emailRouter.post("/refresh", async (req, res) => {
 emailRouter.post("/logout", (_req, res) => {
   res.clearCookie("refreshToken", clearCookieOptions());
   return res.status(200).json({ success: true });
+});
+
+emailRouter.get("/me", async (req, res) => {
+  const authHeader = req.header("authorization");
+  const token = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice("Bearer ".length)
+    : null;
+
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const payload = verifyAccessToken(token);
+    const user = await prisma.user.findUnique({ where: { id: payload.sub } });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    return res.status(200).json({
+      user: {
+        id: user.id,
+        email: user.email,
+        provider: user.provider,
+        name: user.name,
+        role: user.role
+      }
+    });
+  } catch {
+    return res.status(401).json({ error: "Invalid access token" });
+  }
 });

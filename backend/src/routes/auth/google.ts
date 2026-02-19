@@ -36,7 +36,8 @@ googleRouter.get(
         id: user.id,
         email: user.email,
         provider: user.provider,
-        name: user.name
+        name: user.name,
+        role: user.role
       });
     })(req, res, next);
   }

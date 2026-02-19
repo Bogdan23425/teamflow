@@ -28,12 +28,21 @@ export const PublicHeader: React.FC = () => {
                 TeamFlow
               </span>
               <span className="mt-0.5 text-[11px] text-text-muted tracking-wide">
-                Boards & Collaboration
+                Jobs & Hiring
               </span>
             </div>
           </Link>
 
           <div className="flex items-center gap-2">
+            <Link to="/jobs">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 rounded-full px-3 text-[12px]"
+              >
+                Вакансии
+              </Button>
+            </Link>
             <LanguageSwitcher />
             <ThemeToggle />
 

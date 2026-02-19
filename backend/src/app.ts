@@ -7,7 +7,7 @@ import { rateLimit } from "express-rate-limit";
 import { env } from "./config/env.js";
 import { router as authRouter } from "./routes/auth/index.js";
 import { passport } from "./config/passport.js";
-import { boardsRouter } from "./routes/boards.js";
+import { jobsRouter } from "./routes/jobs.js";
 
 export function createApp() {
   const app = express();
@@ -44,7 +44,7 @@ export function createApp() {
   });
 
   app.use("/auth", authLimiter, authRouter);
-  app.use("/boards", boardsRouter);
+  app.use("/jobs", jobsRouter);
 
   app.use((_req, res) => {
     res.status(404).json({ error: "Not found" });

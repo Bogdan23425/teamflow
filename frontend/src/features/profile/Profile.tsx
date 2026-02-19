@@ -17,47 +17,47 @@ import { Checkbox } from "@/shared/ui/Checkbox";
 
 const quickStats = [
   {
-    id: "tasks",
-    label: "Закрытых задач",
-    value: "128",
-    hint: "+12% к прошлому месяцу",
+    id: "applications",
+    label: "Откликов отправлено",
+    value: "42",
+    hint: "+8 за последнюю неделю",
   },
   {
-    id: "boards",
-    label: "Активных досок",
-    value: "7",
-    hint: "Командные и личные",
+    id: "interviews",
+    label: "Интервью",
+    value: "6",
+    hint: "В активном процессе",
   },
   {
     id: "focus",
-    label: "Фокус-слоты",
-    value: "14 ч/нед",
-    hint: "Без митингов",
+    label: "Часов на отклики",
+    value: "9 ч/нед",
+    hint: "Средняя активность",
   },
   {
     id: "rating",
-    label: "Оценка команды",
+    label: "Скоринг профиля",
     value: "4.8",
-    hint: "По результатам ретро",
+    hint: "На основе полноты профиля",
   },
 ];
 
 const focusAreas = [
-  { id: "discovery", title: "Discovery", description: "Интервью, гипотезы, приоритеты" },
-  { id: "delivery", title: "Delivery", description: "Трекинг задач, синки, риск-менеджмент" },
-  { id: "quality", title: "Качество", description: "UX ревью, приёмка, метрики" },
+  { id: "resume", title: "Резюме", description: "Опыт, навыки, проекты" },
+  { id: "interviews", title: "Интервью", description: "Подготовка и фидбек" },
+  { id: "network", title: "Нетворк", description: "Контакты и рекомендации" },
 ];
 
 const activity = [
-  { id: "a1", title: "Апдейт дорожной карты", detail: "Согласована версия Q2", time: "Сегодня, 10:15" },
-  { id: "a2", title: "Обратная связь по дизайну", detail: "Экран оплаты", time: "Вчера, 18:40" },
-  { id: "a3", title: "Встреча с командой", detail: "План спринта", time: "Пн, 12:00" },
+  { id: "a1", title: "Отклик отправлен", detail: "Frontend Developer · TalentBridge", time: "Сегодня, 10:15" },
+  { id: "a2", title: "Приглашение на интервью", detail: "Product Designer · HireFlow", time: "Вчера, 18:40" },
+  { id: "a3", title: "Профиль обновлен", detail: "Добавлены навыки и проекты", time: "Пн, 12:00" },
 ];
 
 export const Profile: React.FC = () => {
   return (
     <main className="flex-1">
-      <div className="w-full px-4 md:px-6 lg:px-8 py-6 md:py-10 flex flex-col gap-6 md:gap-8">
+      <div className="w-full px-4 md:px-6 lg:px-8 py-6 md:py-8 flex flex-col gap-6">
         <motion.section
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -84,11 +84,11 @@ export const Profile: React.FC = () => {
                   </span>
                 </div>
                 <p className="text-sm text-text-muted max-w-2xl">
-                  Помогаю команде двигаться к целям без лишних митингов: собираю фокус-сессии, задаю
-                  прозрачные ожидания и быстро снимаю блокеры.
+                  Ищу сильные продуктовые и инженерные команды, держу профиль актуальным
+                  и системно веду воронку откликов.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {["Discovery", "Delivery", "UX-ревью", "Метрики"].map((tag) => (
+                  {["React", "Node.js", "Product", "Hiring"].map((tag) => (
                     <span
                       key={tag}
                       className="inline-flex items-center gap-1 rounded-full bg-bg px-2.5 py-1 text-[11px] text-text-muted border border-border"
@@ -125,7 +125,7 @@ export const Profile: React.FC = () => {
                 <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted">
                   Фокус недели
                 </p>
-                <h2 className="text-sm font-semibold text-text">Коммуникация команды</h2>
+                <h2 className="text-sm font-semibold text-text">Карьерный фокус</h2>
               </div>
               <span className="h-9 w-9 rounded-xl bg-bg flex items-center justify-center text-primary">
                 <FiStar className="h-4 w-4" />
@@ -163,7 +163,7 @@ export const Profile: React.FC = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               <Input label="Полное имя" defaultValue="Богдан Филиппов" />
-              <Input label="Роль" defaultValue="Product Lead" />
+              <Input label="Роль" defaultValue="Frontend / Product" />
               <Input
                 label="Рабочая почта"
                 type="email"
@@ -199,9 +199,9 @@ export const Profile: React.FC = () => {
                 </div>
               </div>
               <div className="rounded-xl bg-surface-variant border border-border px-4 py-3 space-y-2">
-                <p className="text-xs font-medium text-text">Команды</p>
+                <p className="text-xs font-medium text-text">Ключевые направления</p>
                 <div className="flex flex-wrap gap-2">
-                  {["Core", "Growth", "Design"].map((team) => (
+                  {["Frontend", "Product", "Hiring"].map((team) => (
                     <span
                       key={team}
                       className="inline-flex items-center gap-1 rounded-full bg-bg px-2.5 py-1 text-[11px] text-text-muted border border-border"

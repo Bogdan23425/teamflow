@@ -6,6 +6,7 @@ import { ThemeToggle } from "@/shared/ui/ThemeToggle";
 import { LanguageSwitcher } from "@/shared/ui/LanguageSwitcher";
 import { cn } from "@/shared/utils/cn";
 import * as authApi from "@/shared/api/auth";
+import { clearAccessToken, clearAuthUser, getAuthUser } from "@/shared/auth/session";
 
 type PrivateHeaderProps = {
   className?: string;
@@ -14,6 +15,7 @@ type PrivateHeaderProps = {
 export const PrivateHeader: React.FC<PrivateHeaderProps> = ({ className }) => {
   const navigate = useNavigate();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const user = getAuthUser();
 
   const handleOpenSettings = () => navigate("/settings");
   const handleOpenProfile = () => navigate("/profile");
@@ -23,7 +25,8 @@ export const PrivateHeader: React.FC<PrivateHeaderProps> = ({ className }) => {
     setIsLoggingOut(true);
     try {
       await authApi.logout();
-      localStorage.removeItem("accessToken");
+      clearAccessToken();
+      clearAuthUser();
       navigate("/login");
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -68,7 +71,7 @@ export const PrivateHeader: React.FC<PrivateHeaderProps> = ({ className }) => {
             <FiUser className="h-4 w-4" />
           </span>
           <span className="hidden max-w-[120px] truncate sm:inline-block">
-            Профиль
+            {user?.role === "EMPLOYER" ? "Работодатель" : "Кандидат"}
           </span>
         </button>
 

@@ -16,6 +16,12 @@ enum AuthProvider {
   FACEBOOK
 }
 
+enum UserRole {
+  CANDIDATE
+  EMPLOYER
+  ADMIN
+}
+
 enum BoardType {
   TEAM
   PERSONAL
@@ -29,6 +35,34 @@ enum TaskStatus {
   DONE
 }
 
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERN
+}
+
+enum WorkFormat {
+  ONSITE
+  REMOTE
+  HYBRID
+}
+
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ApplicationStatus {
+  APPLIED
+  REVIEWING
+  INTERVIEW
+  OFFER
+  REJECTED
+  HIRED
+}
+
 model User {
   id          String       @id @default(cuid())
   email       String       @unique
@@ -36,10 +70,17 @@ model User {
   passwordHash String?
   provider    AuthProvider @default(LOCAL)
   providerId  String?
+  role        UserRole     @default(CANDIDATE)
+  headline    String?
+  location    String?
+  about       String?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  boards      Board[]
+  boards            Board[]
+  ownedCompanies    Company[]        @relation("CompanyOwner")
+  createdJobs       Job[]            @relation("JobCreator")
+  jobApplications   JobApplication[] @relation("CandidateApplications")
 
   @@index([provider, providerId])
 }
@@ -93,4 +134,66 @@ model BoardTask {
 
   @@index([boardId])
   @@index([columnId])
+}
+
+model Company {
+  id           String   @id @default(cuid())
+  name         String
+  slug         String   @unique
+  website      String?
+  location     String?
+  about        String   @default("")
+  ownerId      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  owner User  @relation("CompanyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  jobs  Job[]
+
+  @@index([ownerId])
+}
+
+model Job {
+  id             String         @id @default(cuid())
+  title          String
+  slug           String         @unique
+  description    String
+  location       String?
+  salaryMin      Int?
+  salaryMax      Int?
+  currency       String         @default("USD")
+  employmentType EmploymentType @default(FULL_TIME)
+  workFormat     WorkFormat     @default(REMOTE)
+  status         JobStatus      @default(DRAFT)
+  skills         String[]
+  companyId      String
+  createdById    String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  company      Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdBy    User             @relation("JobCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  applications JobApplication[]
+
+  @@index([companyId])
+  @@index([createdById])
+  @@index([status])
+}
+
+model JobApplication {
+  id            String            @id @default(cuid())
+  jobId         String
+  candidateId   String
+  coverLetter   String            @default("")
+  resumeUrl     String?
+  status        ApplicationStatus @default(APPLIED)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  job       Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidate User @relation("CandidateApplications", fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, candidateId])
+  @@index([candidateId])
+  @@index([status])
 }

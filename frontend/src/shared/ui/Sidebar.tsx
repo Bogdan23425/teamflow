@@ -2,21 +2,31 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  FiGrid,
   FiHome,
+  FiLayers,
+  FiBriefcase,
+  FiClipboard,
   FiSettings,
   FiUser,
-  FiUsers,
   FiX,
 } from "react-icons/fi";
 import { cn } from "@/shared/utils/cn";
+import { getAuthUser } from "@/shared/auth/session";
 
-const navItems = [
-  { to: "/app", label: "Обзор", icon: FiHome },
-  { to: "/boards", label: "Доски", icon: FiGrid },
-  { to: "/team", label: "Команда", icon: FiUsers },
+const candidateNavItems = [
+  { to: "/candidate", label: "Обзор", icon: FiHome },
+  { to: "/jobs", label: "Вакансии", icon: FiBriefcase },
+  { to: "/my-applications", label: "Отклики", icon: FiClipboard },
   { to: "/profile", label: "Профиль", icon: FiUser },
-  { to: "/settings", label: "Настройки", icon: FiSettings },
+  { to: "/settings", label: "Настройки", icon: FiSettings }
+];
+
+const employerNavItems = [
+  { to: "/employer", label: "Обзор", icon: FiHome },
+  { to: "/employer/create-job", label: "Новая вакансия", icon: FiLayers },
+  { to: "/jobs", label: "Публичные вакансии", icon: FiBriefcase },
+  { to: "/profile", label: "Профиль", icon: FiUser },
+  { to: "/settings", label: "Настройки", icon: FiSettings }
 ];
 
 export const SIDEBAR_COLLAPSED_WIDTH = 88;
@@ -62,6 +72,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   className,
 }) => {
   const isMobileVariant = variant === "mobile";
+  const user = getAuthUser();
+  const navItems = user?.role === "EMPLOYER" ? employerNavItems : candidateNavItems;
 
   return (
     <div className={cn("h-full", className)}>
@@ -80,7 +92,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       TeamFlow
                     </span>
                     <span className="text-[11px] uppercase tracking-[0.16em] text-text-muted">
-                      Workspace
+                      {user?.role === "EMPLOYER" ? "Employer" : "Candidate"}
                     </span>
                   </div>
                 </div>

@@ -1,3 +1,5 @@
+import { getAccessToken } from "@/shared/auth/session";
+
 export const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:3001";
 
 type Options = {
@@ -84,10 +86,12 @@ export async function apiFetch<TResponse>(path: string, options: Options = {}): 
   let response: Response;
 
   try {
+    const token = getAccessToken();
     response = await fetch(`${API_URL}${path}`, {
       method: options.method ?? "GET",
       headers: {
         "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers
       },
       credentials: "include",

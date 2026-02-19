@@ -65,6 +65,7 @@ export const Register: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState<"CANDIDATE" | "EMPLOYER">("CANDIDATE");
   const [errors, setErrors] = useState<RegisterErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
@@ -101,7 +102,12 @@ export const Register: React.FC = () => {
 
     try {
       const nameFromEmail = email.includes("@") ? email.split("@")[0] : undefined;
-      await authApi.register({ email: email.trim(), password, name: nameFromEmail });
+      await authApi.register({
+        email: email.trim(),
+        password,
+        name: nameFromEmail,
+        role
+      });
 
       setShowSuccessToast(true);
 
@@ -229,6 +235,36 @@ export const Register: React.FC = () => {
                 </motion.div>
               )}
             </AnimatePresence>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs text-text-muted">Роль аккаунта</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setRole("CANDIDATE")}
+                className={[
+                  "h-10 rounded-xl border text-xs transition-colors",
+                  role === "CANDIDATE"
+                    ? "border-primary/60 bg-primary/10 text-text"
+                    : "border-border bg-surface text-text-muted"
+                ].join(" ")}
+              >
+                Кандидат
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole("EMPLOYER")}
+                className={[
+                  "h-10 rounded-xl border text-xs transition-colors",
+                  role === "EMPLOYER"
+                    ? "border-primary/60 bg-primary/10 text-text"
+                    : "border-border bg-surface text-text-muted"
+                ].join(" ")}
+              >
+                Работодатель
+              </button>
+            </div>
           </div>
 
           <Input

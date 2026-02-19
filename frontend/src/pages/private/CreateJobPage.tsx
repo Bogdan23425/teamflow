@@ -1,11 +1,11 @@
 import React from "react";
 import { PrivateLayout } from "@/shared/layouts/PrivateLayout";
-import { Dashboard } from "@/features/dashboard/Dashboard";
+import { CreateJobForm } from "@/features/employer/CreateJobForm";
 
-export const DashboardPage: React.FC = () => {
+export const CreateJobPage: React.FC = () => {
   return (
     <PrivateLayout>
-      <Dashboard />
+      <CreateJobForm />
     </PrivateLayout>
   );
 };

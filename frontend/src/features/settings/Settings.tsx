@@ -16,10 +16,10 @@ import { Input } from "@/shared/ui/Input";
 import { Checkbox } from "@/shared/ui/Checkbox";
 
 const notificationOptions = [
-  { id: "tasks", label: "Изменения в задачах, где я исполнитель" },
-  { id: "mentions", label: "Упоминания @team и @me" },
-  { id: "digest", label: "Сводка за день (18:00)" },
-  { id: "reminders", label: "Напоминания о дедлайнах за 24 часа" },
+  { id: "applications", label: "Изменения статусов моих откликов" },
+  { id: "invites", label: "Приглашения на интервью" },
+  { id: "digest", label: "Сводка по вакансиям за день (18:00)" },
+  { id: "reminders", label: "Напоминания о собеседованиях за 24 часа" },
 ];
 
 const securityOptions = [
@@ -49,7 +49,7 @@ export const Settings: React.FC = () => {
 
   return (
     <main className="flex-1">
-      <div className="w-full px-4 md:px-6 lg:px-8 py-6 md:py-10 flex flex-col gap-6 md:gap-8">
+      <div className="w-full px-4 md:px-6 lg:px-8 py-6 md:py-8 flex flex-col gap-6">
         <motion.header
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -83,10 +83,10 @@ export const Settings: React.FC = () => {
           <div className="col-span-1 xl:col-span-2 rounded-2xl border border-border bg-surface shadow-soft p-5 md:p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-text">Общие</h3>
-              <span className="text-[11px] text-text-muted">Рабочее пространство</span>
+              <span className="text-[11px] text-text-muted">Аккаунт</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-              <Input label="Название" defaultValue="TeamFlow workspace" />
+              <Input label="Название" defaultValue="TeamFlow Jobs Profile" />
               <Input
                 label="Рабочая почта"
                 type="email"

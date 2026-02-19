@@ -5,6 +5,7 @@ export type AuthUser = {
   email: string;
   provider: string;
   name: string | null;
+  role: "CANDIDATE" | "EMPLOYER" | "ADMIN";
 };
 
 export type AuthResponse = {
@@ -16,7 +17,12 @@ export function login(data: { email: string; password: string }) {
   return apiFetch<AuthResponse>("/auth/login", { method: "POST", body: data });
 }
 
-export function register(data: { email: string; password: string; name?: string }) {
+export function register(data: {
+  email: string;
+  password: string;
+  name?: string;
+  role?: "CANDIDATE" | "EMPLOYER";
+}) {
   return apiFetch<AuthResponse>("/auth/register", { method: "POST", body: data });
 }
 

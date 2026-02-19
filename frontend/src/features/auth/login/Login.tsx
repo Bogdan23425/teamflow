@@ -12,6 +12,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Toast, ToastViewport } from "@/shared/ui/Toast";
 import * as authApi from "@/shared/api/auth";
 import { isApiError } from "@/shared/api/client";
+import { setAccessToken, setAuthUser } from "@/shared/auth/session";
 
 interface LoginErrors {
   email?: string;
@@ -50,7 +51,8 @@ export const Login: React.FC = () => {
 
     try {
       const res = await authApi.login({ email: email.trim(), password });
-      localStorage.setItem("accessToken", res.accessToken);
+      setAccessToken(res.accessToken);
+      setAuthUser(res.user);
 
       setShowSuccessToast(true);
 
